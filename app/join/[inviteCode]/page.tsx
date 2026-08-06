@@ -6,10 +6,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users, Shield, ArrowRight, Loader2, CheckCircle2,
-  UserCheck, Sparkles, Mail, ChevronLeft, ExternalLink,
+  UserCheck, Sparkles, UserPlus, ChevronLeft,
 } from "lucide-react";
-
-type Step = "landing" | "quick-join-form" | "magic-link-sent" | "joining";
 
 export default function JoinFellowshipPage({
   params,
@@ -23,12 +21,11 @@ export default function JoinFellowshipPage({
   const [alreadyMember, setAlreadyMember] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Quick-join form state
-  const [step, setStep] = useState<Step>("landing");
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  // Guest join state
+  const [guestName, setGuestName] = useState("");
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [guestError, setGuestError] = useState<string | null>(null);
 
   const router = useRouter();
   const supabase = createClient();
@@ -61,16 +58,7 @@ export default function JoinFellowshipPage({
             .maybeSingle();
 
           if (memberData) {
-            // Already a member — redirect straight to dashboard
-            router.replace(`/dashboard/fellowship/${data.id}`);
-            return;
-          } else {
-            // Auto-join when arriving authenticated (e.g., after magic link click)
-            setStep("joining");
-            await supabase
-              .from("fellowship_members")
-              .insert({ fellowship_id: data.id, user_id: currentUser.id, role: "member" })
-              .select();
+            setAlreadyMember(true);
             router.replace(`/dashboard/fellowship/${data.id}`);
             return;
           }
@@ -82,15 +70,15 @@ export default function JoinFellowshipPage({
       }
     }
     load();
-  }, [inviteCode, supabase]);
+  }, [inviteCode, supabase, router]);
 
-  // Logged-in user: join directly
+  // Handle joining for logged-in user
   const handleJoinAuthenticated = async () => {
     if (!user) {
       router.push(`/login?next=/join/${inviteCode}`);
       return;
     }
-    setStep("joining");
+    setJoining(true);
     try {
       if (!alreadyMember) {
         const { error: joinError } = await supabase
@@ -101,45 +89,60 @@ export default function JoinFellowshipPage({
       router.push(`/dashboard/fellowship/${fellowship.id}`);
     } catch (err: any) {
       setError(err.message || "Failed to join fellowship.");
-      setStep("landing");
+      setJoining(false);
     }
   };
 
-  // Guest quick-join via Magic Link (no password required)
-  const handleSendMagicLink = async (e: React.FormEvent) => {
+  // Handle Instant Guest Join (Zero Email, Zero Password, Zero Domain Redirects)
+  const handleInstantGuestJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!displayName.trim() || !email.trim() || submitting) return;
-    setFormError(null);
-    setSubmitting(true);
+    if (!guestName.trim() || joining) return;
+    setGuestError(null);
+    setJoining(true);
 
     try {
-      // Store their intended name in localStorage — picked up after magic link lands
-      localStorage.setItem(
-        `koinonia_join_${inviteCode}`,
-        JSON.stringify({ displayName: displayName.trim(), fellowshipId: fellowship.id })
+      // 1. Call RPC function to create pre-confirmed guest user
+      const { data: guestCreds, error: rpcErr } = await supabase.rpc(
+        "create_instant_guest",
+        { p_display_name: guestName.trim() }
       );
 
-      // Send OTP magic link — redirects to /auth/callback?next=/join/INVITE_CODE
-      const { error: otpErr } = await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/join/${inviteCode}&name=${encodeURIComponent(displayName.trim())}`,
-          data: {
-            full_name: displayName.trim(),
-          },
-        },
+      if (rpcErr || !guestCreds) {
+        throw new Error(rpcErr?.message || "Failed to create guest account.");
+      }
+
+      // 2. Sign in instantly with generated credentials
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: guestCreds.email,
+        password: guestCreds.password,
       });
 
-      if (otpErr) throw otpErr;
-      setStep("magic-link-sent");
+      if (signInErr) {
+        throw new Error(signInErr.message || "Failed to sign in guest.");
+      }
+
+      // 3. Add guest to fellowship members
+      const { error: memberErr } = await supabase
+        .from("fellowship_members")
+        .insert({
+          fellowship_id: fellowship.id,
+          user_id: guestCreds.user_id,
+          role: "member",
+        });
+
+      if (memberErr && !memberErr.message.includes("unique constraint")) {
+        console.warn("Member insert warning:", memberErr);
+      }
+
+      // 4. Instant redirect into fellowship dashboard
+      router.replace(`/dashboard/fellowship/${fellowship.id}`);
     } catch (err: any) {
-      setFormError(err.message || "Failed to send magic link. Please try again.");
-    } finally {
-      setSubmitting(false);
+      console.error("Instant guest join failed:", err);
+      setGuestError(err.message || "Could not complete guest sign in. Please try again.");
+      setJoining(false);
     }
   };
 
-  // ── Loading ──
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
@@ -148,7 +151,6 @@ export default function JoinFellowshipPage({
     );
   }
 
-  // ── Error ──
   if (error || !fellowship) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-slate-950 text-slate-100">
@@ -169,43 +171,13 @@ export default function JoinFellowshipPage({
     );
   }
 
-  // ── Joining spinner ──
-  if (step === "joining") {
+  if (joining) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 gap-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 gap-4 text-center p-4">
         <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
-        <p className="text-sm text-slate-400">Entering {fellowship.name}…</p>
-      </div>
-    );
-  }
-
-  // ── Magic Link Sent ──
-  if (step === "magic-link-sent") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100">
-        <div className="w-full max-w-md space-y-5 bg-slate-900/90 p-6 sm:p-8 rounded-2xl border border-slate-800 backdrop-blur-md shadow-2xl text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-            <Mail className="w-8 h-8 text-emerald-400" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="font-serif text-2xl font-bold text-slate-50">Check Your Email</h2>
-            <p className="text-sm text-slate-400">
-              We sent a magic link to <span className="text-amber-400 font-semibold">{email}</span>.
-              Click the link in your email to enter <span className="text-slate-200 font-semibold">{fellowship.name}</span>.
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-700/50 text-xs text-slate-400 text-left space-y-1.5">
-            <p className="font-semibold text-slate-300">📧 What to expect:</p>
-            <p>• Open the email from <span className="text-slate-300">Koinonia</span></p>
-            <p>• Click the <span className="text-amber-400 font-medium">"Join Fellowship"</span> button</p>
-            <p>• You'll be taken directly into the fellowship — no password needed</p>
-          </div>
-          <button
-            onClick={() => setStep("quick-join-form")}
-            className="text-xs text-slate-500 hover:text-slate-300 transition cursor-pointer underline"
-          >
-            Use a different email
-          </button>
+        <div className="space-y-1">
+          <p className="text-sm font-bold text-slate-100">Entering {fellowship.name}…</p>
+          <p className="text-xs text-slate-400">Preparing your sanctuary room</p>
         </div>
       </div>
     );
@@ -238,7 +210,7 @@ export default function JoinFellowshipPage({
         <div className="space-y-2">
           {[
             { icon: Users, color: "text-emerald-400", text: "Access shared prayer rooms, study notes, and prayer boards." },
-            { icon: Shield, color: "text-amber-400", text: "Private community protected. Only invite link holders can join." },
+            { icon: Shield, color: "text-amber-400", text: "Private fellowship channel protected by invitation code." },
           ].map(({ icon: Icon, color, text }) => (
             <div key={text} className="flex items-start gap-3 p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-xs text-slate-300">
               <Icon className={`w-4 h-4 ${color} shrink-0 mt-0.5`} />
@@ -247,13 +219,12 @@ export default function JoinFellowshipPage({
           ))}
         </div>
 
-        {/* ── Join Actions ── */}
+        {/* Join Actions */}
         <div className="pt-1 space-y-3">
-
-          {/* Logged-in user */}
           {user ? (
             <button
               onClick={handleJoinAuthenticated}
+              disabled={joining}
               className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-950/40 transition cursor-pointer"
             >
               {alreadyMember ? (
@@ -262,73 +233,61 @@ export default function JoinFellowshipPage({
                 <><CheckCircle2 className="w-5 h-5" /><span>Join Fellowship Now</span></>
               )}
             </button>
-          ) : step === "quick-join-form" ? (
-            /* ── Quick-join form (name + email + magic link) ── */
-            <form onSubmit={handleSendMagicLink} className="space-y-3 p-4 rounded-xl bg-slate-950 border border-slate-700">
+          ) : showGuestForm ? (
+            /* ── Instant Guest Form ── */
+            <form onSubmit={handleInstantGuestJoin} className="space-y-3 p-4 rounded-xl bg-slate-950 border border-slate-700">
               <div className="flex items-center gap-2 mb-1">
                 <button
                   type="button"
-                  onClick={() => { setStep("landing"); setFormError(null); }}
+                  onClick={() => { setShowGuestForm(false); setGuestError(null); }}
                   className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <p className="text-xs font-semibold text-slate-300">Quick Join — No Password Needed</p>
+                <p className="text-xs font-semibold text-slate-200">Join Instantly as Guest</p>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-400">Your Name</label>
+                <label className="text-xs font-medium text-slate-400">Display Name / Name</label>
                 <input
                   type="text"
                   required
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g. Sister Grace"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-400">Your Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. grace@example.com"
+                  autoFocus
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="e.g. Sister Grace, Brother John"
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
                 />
                 <p className="text-[10px] text-slate-500">
-                  We'll send a one-click magic link. No password required.
+                  No email or password needed. You'll enter the fellowship immediately.
                 </p>
               </div>
 
-              {formError && (
-                <p className="text-[11px] text-rose-400 bg-rose-950/30 border border-rose-800/40 rounded-lg p-2">{formError}</p>
+              {guestError && (
+                <p className="text-[11px] text-rose-400 bg-rose-950/30 border border-rose-800/40 rounded-lg p-2">{guestError}</p>
               )}
 
               <button
                 type="submit"
-                disabled={submitting || !displayName.trim() || !email.trim()}
+                disabled={joining || !guestName.trim()}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition cursor-pointer disabled:opacity-50"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                <span>Send Magic Link to Join</span>
+                {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                <span>Enter Fellowship Instantly</span>
               </button>
             </form>
           ) : (
-            /* ── Landing: two options ── */
+            /* ── Default Options ── */
             <>
-              {/* Quick join (magic link) */}
               <button
-                onClick={() => setStep("quick-join-form")}
+                onClick={() => setShowGuestForm(true)}
                 className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 font-bold text-sm transition cursor-pointer group"
               >
-                <Sparkles className="w-5 h-5 text-emerald-400 group-hover:animate-pulse" />
-                <span>Join with Magic Link — No Password</span>
+                <UserPlus className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition" />
+                <span>Join Instantly as Guest (No Password / Email)</span>
               </button>
               <p className="text-center text-[10px] text-slate-500">
-                Enter your name + email, receive a one-click link — you're in instantly.
+                Just enter your display name and join in 1 second.
               </p>
 
               <div className="flex items-center gap-2">
@@ -337,12 +296,11 @@ export default function JoinFellowshipPage({
                 <div className="flex-1 h-px bg-slate-800" />
               </div>
 
-              {/* Full sign-in / signup */}
               <button
                 onClick={() => router.push(`/login?next=/join/${inviteCode}`)}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-sm transition cursor-pointer shadow-lg shadow-amber-950/30"
               >
-                <span>Sign In or Create Full Account</span>
+                <span>Sign In / Register Full Account</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </>
