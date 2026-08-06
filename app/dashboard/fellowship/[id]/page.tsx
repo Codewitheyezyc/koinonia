@@ -10,8 +10,7 @@ import ScriptureNotesChannel from "@/components/ScriptureNotesChannel";
 import MeetingRoomModal from "@/components/MeetingRoomModal";
 import ScriptureReaderDrawer from "@/components/ScriptureReaderDrawer";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import SplashScreen from "@/components/SplashScreen";
-import { Loader2, Video, Sparkles } from "lucide-react";
+import { Video, Loader2 } from "lucide-react";
 
 export default function FellowshipDashboardPage({
   params,
@@ -66,7 +65,11 @@ export default function FellowshipDashboardPage({
   }, [fellowshipId, selectedChannelId, supabase]);
 
   if (loading || !fellowship) {
-    return <SplashScreen message="Opening Sanctuary Fellowship..." />;
+    return (
+      <div className="flex-1 flex items-center justify-center bg-slate-950">
+        <Loader2 className="w-7 h-7 animate-spin text-amber-500" />
+      </div>
+    );
   }
 
   return (
