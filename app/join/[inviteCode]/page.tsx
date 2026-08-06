@@ -101,37 +101,47 @@ export default function JoinFellowshipPage({
     setJoining(true);
 
     try {
-      // 1. Call RPC function to create pre-confirmed guest user
-      const { data: guestCreds, error: rpcErr } = await supabase.rpc(
-        "create_instant_guest",
-        { p_display_name: guestName.trim() }
-      );
+      // 1. Call /api/auth/guest API route to create guest user via GoTrue + confirm email
+      const res = await fetch("/api/auth/guest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: guestName.trim(), fellowshipId: fellowship.id }),
+      });
 
-      if (rpcErr || !guestCreds) {
-        throw new Error(rpcErr?.message || "Failed to create guest account.");
+      const guestData = await res.json();
+      if (!res.ok || guestData.error) {
+        throw new Error(guestData.error || "Failed to create guest account.");
       }
 
-      // 2. Sign in instantly with generated credentials
+      // 2. Sign in with GoTrue native credentials
       const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email: guestCreds.email,
-        password: guestCreds.password,
+        email: guestData.email,
+        password: guestData.password,
       });
 
       if (signInErr) {
         throw new Error(signInErr.message || "Failed to sign in guest.");
       }
 
-      // 3. Add guest to fellowship members
-      const { error: memberErr } = await supabase
-        .from("fellowship_members")
-        .insert({
-          fellowship_id: fellowship.id,
-          user_id: guestCreds.user_id,
-          role: "member",
-        });
+      // 3. Get current session user ID
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      if (signedInUser) {
+        // Ensure profile name is set
+        await supabase
+          .from("profiles")
+          .upsert({
+            id: signedInUser.id,
+            full_name: `${guestName.trim()} (Guest)`,
+          }, { onConflict: "id" });
 
-      if (memberErr && !memberErr.message.includes("unique constraint")) {
-        console.warn("Member insert warning:", memberErr);
+        // Add guest to fellowship members
+        await supabase
+          .from("fellowship_members")
+          .insert({
+            fellowship_id: fellowship.id,
+            user_id: signedInUser.id,
+            role: "member",
+          });
       }
 
       // 4. Instant redirect into fellowship dashboard
