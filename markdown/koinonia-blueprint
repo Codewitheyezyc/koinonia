@@ -1,0 +1,853 @@
+# Document 1 — Manifesto (Updated with App Name)
+
+### The World We Live In
+
+Christians were never meant to walk alone. From the earliest days of the church, spiritual growth, accountability, and strength happened when believers gathered together—praying, studying, and breaking bread as one body.
+
+Today, the digital world connects billions of people, yet Christian fellowship online feels fragmented, superficial, and scattered across tools built for completely different purposes.
+
+We try to hold prayer meetings on corporate video platforms built for quarterly business reviews. We host Bible studies on noise-filled social channels designed to sell ads through outrage and distraction. We drop urgent prayer requests into chaotic messaging groups where they quickly get buried under memes, media files, and daily chatter.
+
+Believers are forced to piece together generic productivity and social tools just to pray, study, and gather. Technology should serve the church, not force the church to adapt to corporate software.
+
+### Why Koinonia Exists
+
+**Koinonia** exists to build a dedicated, digital space for genuine spiritual fellowship—a sacred, intentional platform designed from the ground up for Christian gathering, prayer, and community.
+
+It does not matter what church you attend, what denomination you belong to, or where you are in the world. If you follow Christ, Koinonia is built for you. It gives every believer the power to create a dedicated community space, invite others, and gather seamlessly—whether for late-night audio prayer, structured video Bible studies, screen-shared teachings, or active intercession.
+
+### What We Believe
+
+1. **Fellowship Requires Intentionality:** A gathering space should encourage presence, quiet focus, and reverent engagement—not rapid scrolling, algorithmic distraction, or clout-chasing.
+2. **Every Believer Can Lead a Gathering:** You do not need a mega-church setup or expensive software licenses to gather two, ten, or two hundred believers to pray or study scripture.
+3. **Prayer Is Action, Not Just Text:** Dropping a request into a chat is the start, not the end. Technology should actively track intercession and show believers in real time that they are supported by their brothers and sisters.
+4. **Unity Over Denominational Walls:** Koinonia is agnostic to specific local church structures while remaining anchored in Christ. It exists to serve the global Body of Christ.
+5. **Simplicity Honors the Gathering:** Joining a prayer meeting or Bible study should take one tap or click. Technology must get out of the way so the Spirit and the community can connect.
+
+### What We Will Never Become
+
+* **We will never become a social media feed driven by algorithms.** We will not optimize for screen time, viral outrage, or superficial engagement. There are no "likes" meant to inflate pride.
+* **We will never be a corporate meeting tool.** We will not burden groups with complex enterprise settings, confusing host permissions, or time caps designed to force corporate upgrades.
+* **We will never turn prayer into content.** Prayer requests and intimate fellowship discussions are sacred data. They will never be indexed for public search engines, mined for ad targeting, or broadcast for vanity.
+* **We will never replace the local church.** Koinonia is a catalyst for daily fellowship, intercession, and small-group connection—a tool to strengthen believers wherever they are, not a replacement for local assembly.
+
+---
+
+# Document 2 — Positioning
+
+### Category Ownership
+
+Koinonia owns the **Digital Christian Fellowship Platform** category.
+
+It is neither a standard business video conferencing tool nor a noisy public social network. It occupies the dedicated space of interactive, small-to-mid-size group spiritual gatherings and asynchronous prayer connection.
+
+### Target Audience
+
+* **Primary:** Everyday Christians seeking regular spiritual community, prayer groups, and Bible study groups beyond Sunday services.
+* **Secondary:** Small group leaders, intercessory prayer leaders, youth pastors, online fellowship organizers, and global diaspora Christian networks who need a dedicated space to host their members.
+
+### Brand Voice & Tone
+
+* **Reverent yet Approachable:** Respectful of faith and gathering, but simple, modern, and warm.
+* **Clear & Direct:** Free from religious performance language or complex tech jargon.
+* **Unifying & Inclusive:** Focused on shared faith in Christ without taking sides on non-essential denominational debates.
+
+### Competitive Differentiation & The "Why Not X?" Answers
+
+**1. "Why not just use Zoom or Google Meet?"**
+
+* **Answer:** Zoom and Google Meet are corporate productivity utilities built for status updates and webinars. They lack native spiritual gathering workflows like continuous prayer request tracking, interactive faith-based reactions (Amen, Praying Hands), persistent group text channels between calls, and zero-friction fellowship setup without corporate pricing tiers or complex host permissions.
+
+**2. "Why not just use WhatsApp, Telegram, or Discord?"**
+
+* **Answer:** WhatsApp and Telegram chats become chaotic clutter where prayer requests get lost under daily chatter, and their call features lack high-quality built-in screen sharing for Bible studies and dedicated room controls. Discord is built around complex gaming server setups with overwhelming channels and settings. Koinonia combines high-quality real-time calls with organized fellowship channels in an intuitive, sacred environment designed specifically for believers.
+
+**3. "Why not just watch YouTube Live or Facebook Live church streams?"**
+
+* **Answer:** Streaming platforms are **one-to-many broadcasts** where users passively watch a screen. Koinonia is a **many-to-many interactive gathering** where every participant has a voice, can pray aloud, turn on video, share scripture screens, and actively participate in community.
+
+---
+
+*Document 1 is updated with **Koinonia**, and Document 2 — Positioning is complete.*
+
+Please review Document 2. Let me know if you would like any adjustments, or give me your green light to move on to **Document 3 — Product Philosophy**.
+
+# Document 3 — Product Philosophy
+
+### The Core Filtering Question
+
+Every single feature, button, or workflow proposed for Koinonia must pass one non-negotiable test before a single line of code is written:
+
+> **"Does this feature make it easier for believers to gather, pray, and build genuine fellowship in Christ, or does it invite distraction and self-promotion?"**
+
+If a feature encourages presence, active prayer, or shared study, it belongs in Koinonia. If it encourages vanity, passive scrolling, or friction, it gets rejected immediately.
+
+---
+
+### Product Rules & Design Laws
+
+#### 1. Zero-Friction Gathering
+
+* **Rule:** A user should be able to go from an invite link to sitting in an active prayer call or joining a fellowship group in 2 clicks maximum.
+* **Why:** Spiritual momentum is fragile. High friction (forced complex setups, long onboarding forms, or multi-step room access) kills real-time participation.
+
+#### 2. Sacred Fellowship Over Performance
+
+* **Rule:** No vanity metrics. No public follower counts, no view counts, and no algorithmic trending feeds.
+* **Why:** Spiritual gatherings are centered on God and mutual encouragement, not personal branding or clout.
+
+#### 3. Prayer as an Active State, Not Passive Text
+
+* **Rule:** Prayer requests must live as dynamic, trackable items within groups—not isolated text messages that get buried in a chat stream.
+* **Why:** When a believer asks for prayer, the platform must make it seamless for others to intercede, acknowledge, and track answers to prayer over time.
+
+#### 4. Seamless Across Web & Installed PWA
+
+* **Rule:** The web application must be built progressive-first (PWA), offering native installability, fast load times, low-data performance, and push notifications on both desktop and mobile devices.
+* **Why:** Believers gather globally across varying network conditions and hardware. Access must be instantaneous regardless of OS or app store barriers.
+
+#### 5. Clean, Distraction-Free Interface
+
+* **Rule:** Interface elements must stay out of the way during live meetings and quiet devotional reading. Dark/Light themes must support reverent focus.
+* **Why:** The app is a conduit for spiritual connection, not a noisy digital hub competing for attention.
+
+---
+
+### What We Will Never Build (and Why)
+
+* **Public "Explore" or Viral Feeds:** We will never build a TikTok-style or Instagram-style feed. Believers assemble in intentional groups, not algorithmic echo chambers.
+* **Paid Tier Call-Duration Limits for Personal Groups:** We will never cut off an active prayer meeting abruptly after 40 minutes just to force a corporate upgrade.
+* **Complex Multi-Role Hierarchy Systems:** We will not replicate Discord's complex permission trees. Simple group roles—**Host (Organizer)** and **Member (Participant)**—keep administration clear and lightweight.
+* **Ad Networks & Retargeting Scripts:** We will never sell user space to third-party ad networks or insert banner ads inside prayer rooms or fellowship channels.
+
+---
+
+### The Marketing Page Philosophy (The Front Door)
+
+Since Koinonia’s primary entry point for new users will be the web, the marketing landing page serves as the sacred "Front Door" of the application.
+
+* **Clear Value Proposition above the Fold:** Visitors immediately understand what Koinonia is within 3 seconds: *"A dedicated space for Christian fellowship, audio/video prayer rooms, and Bible study groups."*
+* **Interactive Live Preview / Demo Flow:** Potential group leaders can instantly preview how simple it is to launch a room or invite their group before even registering.
+* **One-Click Installation:** Directly on the marketing site, visitors can click "Install App" (via PWA) or "Create a Gathering" to jump straight into the product.
+* **Social Proof through Purpose:** Highlighting testimonials from intercessors, small group leaders, and global fellowships rather than corporate metrics.
+
+---
+
+*Document 3 — Product Philosophy is complete.*
+
+Please review Document 3. Let me know if you would like any tweaks, or give me your approval to proceed to **Document 4 — User Psychology**.
+
+# Document 4 — User Psychology
+
+### Core Emotional & Psychological State
+
+Believers coming to Koinonia are usually driven by one of three primary internal drivers:
+
+1. **The Need for Intimate Gathering:** They feel isolated in their daily routine or disconnected between Sunday services and crave consistent prayer and scripture fellowship.
+2. **The Desire to Mobilize Others:** Group leaders, intercessors, or friends who carry a burden to gather people (for morning prayer, Bible study, or crisis intercession) but are tired of fighting generic tools.
+3. **The Search for a Distraction-Free Space:** Users exhausted by traditional social media algorithms, ads, and noise who want a clean digital environment dedicated solely to spiritual growth.
+
+---
+
+### The 5 Stages of the User Journey
+
+#### Stage 1: Discovery & Invitation
+
+* **Mindset:** *"Someone sent me a link to join a prayer session / Bible study."*
+* **Emotion:** Curious, slightly cautious about technical friction or forced sign-up steps.
+* **Product Behavior:** The landing page and invite links open cleanly. No heavy downloads or complex setup required. The user immediately sees who invited them and the purpose of the gathering.
+
+#### Stage 2: First Gathering (The "Upper Room" Moment)
+
+* **Mindset:** *"I am in the room. Does this feel like a sacred space, or just another business call?"*
+* **Emotion:** Relieved when they see a clean interface, faith-tailored reactions (Amen, Praying Hands), clear audio/video, and easy screen sharing.
+* **Product Behavior:** Joining takes 1-2 taps. Audio/video works instantly without technical confusion. Custom controls and persistent notes make the meeting feel purpose-built.
+
+#### Stage 3: Asynchronous Fellowship & Intercession
+
+* **Mindset:** *"The call ended, but I want to stay connected with this group during the week."*
+* **Emotion:** Supported and connected.
+* **Product Behavior:** The group text channels, Bible study study notes, and the Prayer Request Board remain active. When they post a prayer request, seeing notifications like *"3 members prayed for your request"* builds deep emotional resonance and trust.
+
+#### Stage 4: Ownership & Group Creation
+
+* **Mindset:** *"I want to start my own prayer circle / Bible study group for my friends or ministry."*
+* **Emotion:** Empowered and purposeful.
+* **Product Behavior:** Creating a new fellowship space is effortless. Unique invite links, schedule setup, and host controls are straightforward, giving the user total confidence to lead.
+
+#### Stage 5: Habitual Gathering & Community Anchor
+
+* **Mindset:** *"Koinonia is where my prayer group and Bible study gather every week."*
+* **Emotion:** Deeply integrated, spiritually encouraged, and loyal.
+* **Product Behavior:** PWA installation keeps the app one tap away on their phone or desktop. Daily/weekly gathering notifications arrive cleanly without spam.
+
+---
+
+### User Fears & How We Address Them
+
+| User Fear | How Koinonia Resolves It |
+| --- | --- |
+| **"Will this feel like an awkward business meeting?"** | Interface is designed around spiritual fellowship—with prayer boards, scripture notes, and worship-focused reactions. |
+| **"Are my prayer requests private?"** | Strict group-level privacy powered by Supabase Row-Level Security. Data is never mined, sold, or exposed publicly. |
+| **"Is it too difficult for older or non-tech-savvy members to join?"** | One-click web/PWA entry links bypass complicated store downloads and account setups for meeting guests. |
+| **"Will I get cut off in the middle of a prayer meeting?"** | No arbitrary corporate 40-minute call limits on fellowship sessions. |
+
+---
+
+### How the Product Communicates
+
+* **Warm & Welcoming:** Uses supportive, clear language (e.g., *"Gathering," "Fellowship," "Prayer Circle," "Intercede"* instead of corporate terms like *"Tenant," "Workspace," "Host Meeting"*).
+* **Respectful Notifications:** Notifications are deliberate—alerting users when a live gathering is starting or when someone intercedes for their prayer request, never spamming for vanity metrics.
+
+---
+
+*Document 4 — User Psychology is complete.*
+
+Please review Document 4. Let me know if you would like any adjustments, or give me your approval to move to **Document 5 — Technical Architecture**.
+
+# Document 5 — Technical Architecture
+
+Since Koinonia does not rely on generative AI, this document outlines the core system design, data flows, client architecture, media routing, and infrastructure scaling.
+
+---
+
+### System Architecture Overview
+
+```
+[ Progressive Web App (PWA) / Web Client ]
+       |                              |
+       | (REST / Realtime WS)         | (WebRTC Audio/Video/Screen)
+       v                              v
+[ Supabase Backend ]            [ LiveKit / WebRTC SFU ]
+  ├── Auth (JWT & Magic Links)    ├── Selective Forwarding Unit
+  ├── Postgres Database (RLS)     ├── Audio / Video Rooms
+  └── Realtime (WebSockets)       └── Screen Share Stream
+       |
+       | (Media Storage / Optimization)
+       v
+[ Cloudinary ]
+  ├── User Avatars
+  ├── Group Cover Images
+  └── Chat Attachments & Documents
+
+```
+
+---
+
+### Key Tech Stack Components
+
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| **Frontend Platform** | Next.js 16 / React (PWA) | Progressive Web App installed on Desktop/Mobile with Service Workers, Web Push, and Offline Shell. |
+| **Backend & Auth** | Supabase | Managed PostgreSQL, Row-Level Security (RLS), Auth (Email/Password, Magic Link), and Realtime WebSockets for instant chat/reactions. |
+| **Live Audio/Video/Screen** | LiveKit (or Agora SFU) | Multi-party WebRTC audio/video rooms, active speaker detection, low-latency screen sharing, and adaptive bitrate streaming. |
+| **Media & Asset Management** | Cloudinary | Dynamic image optimization, user avatar transformations, document upload handling, and CDN delivery for attachments. |
+| **Hosting & Edge Delivery** | Vercel / Cloudflare | Global CDN delivery, low latency edge routing, SSL, and custom domain routing. |
+
+---
+
+### Data Isolation & Privacy Security Model (Supabase RLS)
+
+All data access is strictly governed at the database level using Supabase Row-Level Security (RLS):
+
+1. **Group & Channel Isolation:** Users can only read/write messages in groups where they hold an active membership record in `group_members`.
+2. **Prayer Board Privacy:** Prayer requests marked as "Private / Group Only" are constrained to that group ID via database policies.
+3. **Meeting Access Control:** LiveKit join tokens are generated via serverless backend endpoints that verify the user’s authenticated JWT and active group membership before issuing room access.
+
+---
+
+### Real-Time Infrastructure (Chat, Audio/Video & Reactions)
+
+#### 1. Low-Latency Audio/Video (LiveKit SFU)
+
+* **Selective Forwarding Unit (SFU):** Instead of peer-to-peer (Mesh), video and audio streams route through an SFU server, allowing low-bandwidth multi-party calls (up to 100+ participants per room).
+* **Audio-First Bandwidth Optimization:** Audio prayer rooms automatically disable video tracks to ensure crystal-clear audio quality even on low 2G/3G mobile networks.
+* **Screen Sharing:** High-framerate stream encoding dedicated for Bible study slide decks, document reading, and scripture passages.
+
+#### 2. Chat & Interactive Reactions (Supabase Realtime)
+
+* **Realtime WebSockets:** Chat messages, live meeting reactions (Amen, Praying Hands), and "I Prayed for This" counter updates broadcast over persistent Supabase Realtime channels with sub-100ms latency.
+* **Persistent History:** Chat messages and pinned scripture notes persist directly to PostgreSQL for asynchronous access after calls end.
+
+---
+
+### Media Storage Pipeline (Cloudinary)
+
+* **Upload Presets:** Client uploads media directly to Cloudinary using signed upload parameters generated by Supabase Edge Functions.
+* **Optimization Pipeline:** Auto-converts avatars and group graphics to lightweight `.webp` formats with responsive transformations, preserving user bandwidth.
+
+---
+
+### Performance & PWA Installation Strategy
+
+* **PWA Service Worker:** Caches application shell, static assets, and UI components locally for instant app loading.
+* **Web Push Notifications:** Integrated with the browser Push API to alert users when scheduled prayer times begin or when someone responds to a prayer request.
+
+---
+
+*Document 5 — Technical Architecture is complete.*
+
+Please review Document 5. Let me know if you would like any technical adjustments, or give me your approval to move to **Document 6 — User Journey**.
+
+# Document 6 — User Journey
+
+This document details the complete end-to-end user experience, mapping every step from initial awareness to becoming an active community host within Koinonia.
+
+---
+
+### Phase 1: Discovery & Zero-Friction Entry
+
+#### Step 1: The Invitation Link
+
+* **Trigger:** A user receives an invite link via messaging apps (WhatsApp, Telegram, SMS, or Email) or visits the marketing landing page directly.
+* **UI Screen:** Direct Invite Landing Page.
+* **User Emotion:** Curious, hopeful, looking for quick access.
+* **Experience & Decision Point:**
+* The page clearly displays the inviting group’s name, creator, and gathering purpose (e.g., *"Pastor David invited you to 'Morning Intercession & Word' on Koinonia"*).
+* The user sees two simple buttons: **"Join Meeting / Fellowship"** and **"Install App"**.
+* No immediate complex registration forms. Guests can enter a display name to join an active call instantly, with seamless account registration offered after or alongside entry.
+
+
+
+#### Step 2: Account Creation & Profile Setup
+
+* **Trigger:** Creating an account or formalizing guest entry.
+* **UI Screen:** Quick Authentication Screen.
+* **Experience:**
+* Simple sign-up using Email/Password, Magic Link, or Google Auth via Supabase.
+* Profile customization takes less than 30 seconds: Full Name, optional Profile Picture (processed and optimized via Cloudinary), and preferred local time zone.
+
+
+
+---
+
+### Phase 2: The Core Fellowship Experience (Live Gathering)
+
+#### Step 3: Entering the Gathering Room
+
+* **Trigger:** Clicking "Join Gathering" on a scheduled meeting or active prayer room link.
+* **UI Screen:** Live Room Waiting & Device Check Modal -> Live Gathering Screen.
+* **Experience:**
+* **Device Setup:** A clean preview modal lets the user toggle microphone, camera, and select audio output before joining.
+* **Room Launch:** Powered by LiveKit, the user enters the active audio/video room instantly.
+
+
+
+#### Step 4: Live Meeting Interaction
+
+* **UI Screen:** Main Interactive Meeting View.
+* **Features in Action:**
+* **Video/Audio Grid:** Dynamic layout adjusting for active speakers, audio-only members, and screen shares.
+* **Worship & Prayer Reactions:** One-tap floating reactions (*Amen*, *Praying Hands*, *Hallelujah*, *Heart*) appear on-screen for all participants without interrupting the speaker or intercessor.
+* **Screen Share & Scripture Focus:** Hosts can share study materials, slide decks, or online Bibles in high resolution.
+* **Side Panel (Chat & Notes):** Persistent in-call chat tab and pinned scripture notes sidebar where hosts drop Bible passages and key prayer points during the call.
+
+
+
+---
+
+### Phase 3: Asynchronous Community & Intercession
+
+#### Step 5: Post-Call Transition to Group Hub
+
+* **Trigger:** The live audio/video call ends.
+* **UI Screen:** Group Community Dashboard.
+* **User Emotion:** Connected, spiritually encouraged, wanting to stay in touch.
+* **Experience:**
+* The call window cleanly closes into the group's main space.
+* The user sees dedicated group channels: `#general-chat`, `#bible-study-notes`, and `#prayer-requests`.
+
+
+
+#### Step 6: The Prayer Request Board
+
+* **UI Screen:** Prayer Request Board Tab.
+* **Experience:**
+* A member posts a prayer request (e.g., *"Please pray for my mother's health update tomorrow"*).
+* Group members see the request and tap a dedicated **"I Prayed for This"** button.
+* The original poster receives an uplifting push notification: *"5 members of 'Morning Intercession' just prayed for your request."*
+* When prayers are answered, the author updates the request status to **"Testimony"**, notifying the group to celebrate together.
+
+
+
+---
+
+### Phase 4: Empowerment & Group Leadership
+
+#### Step 7: Creating a New Fellowship
+
+* **Trigger:** The user decides to host their own prayer group, family devotion, or Bible study.
+* **UI Screen:** "Create New Gathering" Modal.
+* **Experience:**
+* User inputs: Group Name, Purpose, Privacy (Public by Invite Link vs. Private), and Group Cover Photo.
+* Instantly generates a unique shareable link (`koinonia.app/join/xyz`).
+
+
+
+#### Step 8: Scheduling Recurring Gatherings
+
+* **UI Screen:** Schedule Event Setup.
+* **Experience:**
+* Host sets recurring prayer times (e.g., Every Tuesday at 7:00 PM).
+* Automated push and web notifications trigger 15 minutes before the call starts for all group members across their respective time zones.
+
+
+
+---
+
+### Summary Journey Blueprint
+
+```
+[ Discovery / Link ] ──► [ Instant Room Access / Sign-up ] ──► [ Live Audio/Video Prayer ]
+                                                                       │
+[ Repeat Gathering ] ◄── [ "I Prayed For This" / Chat ] ◄── [ Prayer Board & Notes ]
+
+```
+
+---
+
+*Document 6 — User Journey is complete.*
+
+Please review Document 6. Let me know if you would like any adjustments, or give me your approval to move to **Document 7 — Growth Strategy**.
+
+# Document 7 — Growth Strategy
+
+Koinonia will not rely on aggressive paid ads, algorithmic tricks, or viral growth loops that compromise the sanctity of the community. Instead, growth is driven by **engineered word of mouth, utility-driven invite loops, and organic ministry partnerships**.
+
+---
+
+### The 3 Core Growth Engines
+
+#### 1. The Utility-Driven Invite Loop (Primary Engine)
+
+Growth in Koinonia happens naturally through the core function of the app: **gathering people**.
+
+* **The Mechanism:** When a leader, pastor, or intercessor creates a prayer meeting or Bible study, they must invite others to participate. Every meeting created becomes an organic user acquisition channel.
+* **Low-Barrier Guest Access:** Invites open directly in the browser or PWA. Guests can join an active prayer meeting in seconds without navigating app store hurdles, making the conversion from guest to registered user smooth and immediate.
+
+#### 2. The "Prayed For You" External Share Loop
+
+* **The Mechanism:** When a user posts a prayer request or updates a request to a **Testimony**, Koinonia allows them to generate a beautifully styled, downloadable summary card or share link (e.g., *"Our prayer group just interceded for family healing. Join our group on Koinonia"*).
+* **Network Effect:** Users share these testimonies and prayer cards directly to WhatsApp status, Instagram stories, and family messaging groups, bringing new believers into the app through authentic stories of answered prayer.
+
+#### 3. Ministry & Fellowship Partnerships
+
+* **The Mechanism:** Direct outreach to Christian university campus fellowships, diaspora church groups, intercessory prayer networks, and independent small group leaders who are currently struggling with Zoom's time limits or WhatsApp's message clutter.
+* **Value Pitch:** *"Replace 3 separate tools (Zoom, WhatsApp, and prayer lists) with one sacred space built specifically for your fellowship."*
+
+---
+
+### Engineered Word of Mouth Features
+
+* **Instant Room Share Links:** Every group and room generates clean, custom links with rich open-graph preview cards (`koinonia.app/g/morning-prayer`) that render beautifully when pasted into WhatsApp, iMessage, or Telegram.
+* **Group QR Codes:** Simple QR code generation for live physical church bulletins, slide decks, or retreat flyers—allowing attendees in a physical building to scan and join an online prayer group instantly.
+* **Calendar Integration:** One-tap "Add to Google Calendar / Apple Calendar" links with direct room URLs so participants never miss scheduled gatherings.
+
+---
+
+### Organic Content Strategy (The Marketing Front Door)
+
+The marketing landing page and blog serve as an educational beacon for digital fellowship:
+
+* **Resource Hub for Small Group Leaders:** High-value written guides and templates (e.g., *"How to Structure an Online Midnight Prayer Session,"* *"10 Scripture Passages for Group Intercession"*).
+* **Testimony Spotlights:** Text and video stories highlighting how global prayer groups use Koinonia to maintain daily fellowship across different time zones.
+* **Open & Honest Build-in-Public Series:** Sharing the journey of building software designed specifically to serve the Body of Christ, building trust and community support.
+
+---
+
+### Key Growth Metrics (KPIs)
+
+Rather than tracking vanity metrics like raw impressions, Koinonia tracks meaningful engagement:
+
+1. **Gathering Frequency:** Number of live audio/video sessions hosted per week.
+2. **Intercession Velocity:** Total number of "I Prayed for This" actions taken per active group.
+3. **Invite Conversion Rate:** Percentage of guest meeting participants who convert to registered account holders.
+4. **Group Retention:** Percentage of fellowship groups that host 2+ meetings every month.
+
+---
+
+*Document 7 — Growth Strategy is complete.*
+
+Please review Document 7. Let me know if you would like any adjustments, or give me your approval to move to **Document 8 — Business Model**.
+
+# Document 8 — Business Model
+
+Koinonia must remain financially sustainable and ethically aligned with its mission. It will never sell user data, run third-party advertising, or lock essential spiritual features—like daily prayer or joining a fellowship—behind a paywall.
+
+The business model is structured around a **Freemium + Partner Model**, where core community features are free for everyday believers, while larger ministries, churches, and power organizers pay for advanced operational capabilities and infrastructure usage.
+
+---
+
+### Tiered Pricing Structure
+
+```
+┌──────────────────────────┐    ┌──────────────────────────┐    ┌──────────────────────────┐
+│        SEEKER            │    │        FELLOWSHIP        │    │        KINGDOM           │
+│      (Free Forever)      │    │    ($15 - $29 / month)   │    │    ($79 - $149 / month)  │
+├──────────────────────────┤    ├──────────────────────────┤    ├──────────────────────────┤
+│ • Unlimited Group Joining│    │ • Everything in Free     │    │ • Everything in Fellowship│
+│ • Up to 15 Live Call Ops │    │ • Up to 100 Call Members │    │ • Up to 300+ Call Members│
+│ • Prayer Board Access    │    │ • HD Video & Screen Share│    │ • Cloud Meeting Recording│
+│ • Basic Text Channels    │    │ • Custom Subdomain/Link  │    │ • Advanced Analytics     │
+│ • PWA Installability     │    │ • Unlimited Storage      │    │ • Dedicated Support      │
+└──────────────────────────┘    └──────────────────────────┘    └──────────────────────────┘
+
+```
+
+#### 1. Seeker Tier (Free Forever)
+
+* **Target:** Everyday believers, small family devotionals, and informal prayer circles.
+* **Price:** $0 / month.
+* **Included:**
+* Unlimited text channels and prayer request tracking.
+* Live audio/video meetings up to 15 concurrent participants per call.
+* Screen sharing and live worship reactions.
+* Full PWA installation on mobile and desktop.
+
+
+
+#### 2. Fellowship Tier (Pro / Small Ministry)
+
+* **Target:** Active small group leaders, campus ministries, intercessory groups, and parachurch organizations.
+* **Price:** $15 to $29 / month.
+* **Included:**
+* Expanded live audio/video rooms up to 100 concurrent participants.
+* HD screen sharing and extended bandwidth caps.
+* Custom fellowship invite links (`koinonia.app/fellowship/grace-prayer`).
+* Cloud storage via Cloudinary for meeting attachments, media files, and document shares.
+
+
+
+#### 3. Kingdom Tier (Church & Ministry Partner)
+
+* **Target:** Established churches, global diaspora networks, and large prayer ministries.
+* **Price:** $79 to $149 / month.
+* **Included:**
+* Multi-room live gatherings supporting 300+ concurrent participants.
+* Cloud audio/video meeting recording and automated sermon/study archiving.
+* Custom branding on group spaces (church logo, custom cover banners).
+* Group analytics (attendance trends, prayer activity engagement).
+
+
+
+---
+
+### Alternative Revenue Streams (Ethical & Mission-Aligned)
+
+1. **Voluntary Kingdom Patronage (Sponsorship):**
+* A "Sponsor a Gathering" option allowing generous members or patrons to cover infrastructure costs for free prayer groups globally.
+
+
+2. **Ministry Add-Ons:**
+* **Recording & Archiving Pack:** Optional add-on ($5/month) for small groups wanting to record, store, and stream past Bible study meetings.
+* **SMS Gathering Alerts:** Pay-as-you-go SMS credit bundles for sending direct text reminders for urgent prayer alerts or meeting start times.
+
+
+
+---
+
+### Unit Economics & Cost Control
+
+To maintain strong margins and prevent server abuse:
+
+* **Audio-First Optimization:** Defaulting audio-only mode for prayer calls drastically cuts WebRTC bandwidth usage via LiveKit compared to full video streams.
+* **Dynamic Cloudinary Processing:** Image assets and documents are compressed on upload to minimize CDN and storage costs.
+* **Supabase Free/Pro Tier Scalability:** Utilizing Supabase indexing and efficient Row-Level Security ensures database costs scale linearly with active paying groups, not idle user sign-ups.
+
+---
+
+*Document 8 — Business Model is complete.*
+
+Please review Document 8. Let me know if you would like any adjustments, or give me your approval to move to **Document 9 — Technical Roadmap**.
+
+# Document 9 — Technical Roadmap
+
+This technical roadmap defines the precise sequence of engineering tasks to build **Koinonia** as an installable Progressive Web App (PWA) using **Next.js**, **Supabase** (Auth, Postgres RLS, Realtime), **LiveKit** (WebRTC audio/video/screen share), and **Cloudinary** (media optimization).
+
+---
+
+### Phase 1: Foundational Architecture & Core Database (Weeks 1 – 2)
+
+#### 1. Setup & Environment Configuration
+
+* Initialize Next.js project with Tailwind CSS, TypeScript, and `@ducanh2912/next-pwa` (or equivalent PWA plugin) to configure `manifest.json`, web icons, and offline service worker fallback.
+* Configure Supabase project with environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+* Configure Cloudinary API credentials and upload presets for profile avatars and group media.
+
+#### 2. Database Schema & Row-Level Security (RLS) Implementation
+
+Execute initial PostgreSQL migrations in Supabase:
+
+* `profiles`: `id (FK to auth.users)`, `full_name`, `avatar_url`, `time_zone`, `created_at`.
+* `fellowships`: `id`, `name`, `description`, `cover_image_url`, `created_by (FK profiles)`, `invite_code (UNIQUE)`, `is_private (BOOLEAN)`.
+* `fellowship_members`: `id`, `fellowship_id (FK)`, `user_id (FK)`, `role ('host' | 'member')`, `joined_at`.
+* `channels`: `id`, `fellowship_id (FK)`, `name`, `type ('chat' | 'prayer_board' | 'notes')`.
+* `messages`: `id`, `channel_id (FK)`, `user_id (FK)`, `content`, `attachment_url`, `created_at`.
+* `prayer_requests`: `id`, `fellowship_id (FK)`, `user_id (FK)`, `title`, `description`, `status ('active' | 'answered')`, `created_at`.
+* `intercessions`: `id`, `prayer_request_id (FK)`, `user_id (FK)`, `created_at`.
+
+*Apply RLS policies ensuring users can only read/write data in fellowships where their `user_id` exists in `fellowship_members`.*
+
+---
+
+### Phase 2: Auth, Group Management & Persistent Messaging (Weeks 3 – 4)
+
+#### 1. Auth & PWA Onboarding Flow
+
+* Build Magic Link & Email/Password authentication UI with Supabase Auth.
+* Build account setup screen (Full Name, Avatar upload directly to Cloudinary via client SDK).
+* Implement instant invite-link routing (`/join/[invite_code]`) that adds the user to `fellowship_members` upon authenticated entry.
+
+#### 2. Asynchronous Group Hub & Realtime Chat
+
+* Build fellowship dashboard with dynamic sidebar channel listing.
+* Implement real-time channel messaging using **Supabase Realtime Broadcast / Postgres Changes**.
+* Build the **Prayer Request Board UI**:
+* Form to submit prayer requests.
+* Real-time "I Prayed for This" intercession counter powered by Supabase Realtime.
+* Option to toggle status from "Active" to "Testimony".
+
+
+
+---
+
+### Phase 3: Real-Time Audio, Video & Screen Share Engine (Weeks 5 – 6)
+
+#### 1. LiveKit Infrastructure Setup
+
+* Deploy or configure LiveKit Cloud / self-hosted instance.
+* Build a Next.js API Route (`/api/livekit/token`) that verifies user identity and group membership via Supabase JWT before issuing a LiveKit access token.
+
+#### 2. Audio/Video Meeting Interface
+
+* Integrate `@livekit/components-react` inside the meeting interface.
+* Build pre-join modal for audio mic/speaker selection and camera preview.
+* Implement dynamic grid layouts for multi-party video and screen sharing.
+* **Audio-First Optimization:** Implement default low-bandwidth mode for prayer-only calls (disabling active video tracks to conserve mobile data).
+* Implement Live Meeting Side Panel (In-call persistent chat and pinned scripture notes).
+* Implement floating live worship reactions (*Amen*, *Praying Hands*, *Hallelujah*) broadcasting via Supabase Realtime Broadcast channels.
+
+---
+
+### Phase 4: Push Notifications, PWA Polish & Launch Prep (Weeks 7 – 8)
+
+#### 1. Service Worker & Push Notifications
+
+* Integrate Web Push API with Firebase Cloud Messaging (FCM) or Supabase Webhooks.
+* Trigger push alerts when scheduled prayer meetings begin or when someone taps "I Prayed for This" on a request.
+
+#### 2. Marketing Page & PWA Installation
+
+* Construct the conversion-optimized landing page with an instant "Install App" PWA prompt banner.
+* Conduct end-to-end testing across Mobile Safari (iOS), Mobile Chrome (Android), and Desktop browsers.
+
+---
+
+### Priority Matrix Overview
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ HIGH PRIORITY / PHASE 1 & 2 (MVP CORE)                                │
+│ • Supabase Auth, DB Schemas, & RLS Policies                            │
+│ • Fellowship Group Creation & Unique Invite Links                      │
+│ • Persistent Text Chat & Prayer Request Board                          │
+│ • LiveKit Audio/Video Call Room & Screen Share                         │
+├────────────────────────────────────────────────────────────────────────┤
+│ MEDIUM PRIORITY / PHASE 3 & 4 (FELLOWSHIP ENHANCEMENT)                │
+│ • Live Meeting Worship Reactions (Amen, Praying Hands)                │
+│ • Web Push Notifications for Scheduled Gatherings                      │
+│ • Cloudinary Image Transformations for Avatars/Attachments            │
+│ • "I Prayed For This" Realtime Counter                                 │
+├────────────────────────────────────────────────────────────────────────┤
+│ FUTURE ENHANCEMENTS / PHASE 5+ (SCALING & MINISTRIES)                 │
+│ • Meeting Audio Recording & Archiving via LiveKit Egress              │
+│ • In-App Parallel Bible Reader with Scripture Pinning                  │
+│ • SMS Meeting Reminders & Advanced Analytics for Churches             │
+└────────────────────────────────────────────────────────────────────────┘
+
+```
+
+---
+
+*Document 9 — Technical Roadmap is complete.*
+
+Please review Document 9. Let me know if you would like any adjustments, or give me your approval to move to the final document: **Document 10 — Long Term Vision**.
+
+# Document 10 — Long Term Vision
+
+### The 10-Year Horizon: The Global Digital Sanctuary
+
+In 5 to 10 years, **Koinonia** evolves from a real-time web application into the primary digital infrastructure powering Christian fellowship, prayer mobilization, and small-group connection worldwide.
+
+Just as physical church buildings have served as physical sanctuaries throughout history, Koinonia becomes the universal, digital sanctuary—a quiet, sacred space accessible instantly on any device, anywhere on Earth, transcending physical borders, political restrictions, and denominational barriers.
+
+---
+
+### Key Long-Term Evolution Pillars
+
+#### 1. Global Intercession & Urgent Prayer Networks
+
+* Koinonia will host real-time global prayer networks capable of mobilizing thousands of intercessors across time zones within seconds during international crises, natural disasters, or community needs.
+* Time-zone intelligent scheduling will enable continuous, 24/7 unbroken prayer chains ("Prayer Watches") where groups seamlessly hand off intercession responsibilities from one region of the world to the next.
+
+#### 2. Sacred Scripture & Teaching Integration
+
+* Built-in multi-translation parallel Bible engines and study tools will sit directly alongside live video/audio streams, allowing believers to read, highlight, annotate, and share scriptures together during live calls without ever leaving the room.
+* Audio archives and transcription engines will automatically index Bible study sessions into searchable group study libraries, creating lasting spiritual resources for future members.
+
+#### 3. Low-Bandwidth Mission & Rural Accessibility
+
+* Specialized ultra-low bandwidth algorithms and native offline-first caching will bring crystal-clear audio prayer and fellowship to believers in remote mission fields, rural communities, and low-connectivity regions across Latin America, Asia, and Africa.
+* Encrypted, high-privacy meeting modes designed to protect persecuted or sensitive Christian gatherings operating in closed regions worldwide.
+
+---
+
+### What the Company Becomes
+
+Koinonia becomes a sustainable, mission-anchored institution built to serve generations of believers.
+
+It resists the standard tech startup trajectory of speculative venture capital buyouts, aggressive ad monetization, or selling out to corporate acquirers. Instead, it operates as a self-sustaining, community-supported technology platform—ethically funded, privacy-first, and permanently dedicated to serving the global Church.
+
+---
+
+### The Legacy
+
+The ultimate legacy of Koinonia is not measured by valuation, user traffic, or corporate metrics.
+
+Its legacy is measured in:
+
+* **Restored Fellowship:** Countless believers who once felt isolated, lonely, or spiritually scattered finding a consistent daily gathering space.
+* **Answered Prayers:** Millions of prayer requests recorded, interceded for, and transformed into testimonies of God's faithfulness.
+* **Unbroken Unity:** Believers across every continent, culture, and tradition gathering under one name—Christ—praying, studying, and walking together in true *Koinonia*.
+
+---
+
+*Document 10 — Long Term Vision completes the 10-document Strategic Blueprint for Koinonia.*
+
+---
+
+# Document 11 — Design System & Visual Identity
+
+### The Visual Philosophy: Sacred Modernity
+
+Koinonia’s visual design must bridge two worlds: **reverence** and **modern clarity**. It should feel calm, warm, and intentional—like stepping out of a noisy, chaotic street into a well-lit, quiet sanctuary.
+
+It avoids two major design traps:
+
+1. **The Corporate Trap:** Cold, high-contrast blues and sterile greys that make the app feel like a remote workplace tool (Zoom/Slack).
+2. **The Cluttered Social Trap:** Over-saturated primary colors, bright red alert badges, and aggressive gradients designed to trigger dopamine and screen addiction.
+
+---
+
+### Core Palette: "The Upper Room" Palette
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ PRIMARY & ACCENTS                                                     │
+│ █ Dark Navy (Deep Sacred)   #0F172A | slate-900                       │
+│ █ Warm Amber/Gold (Presence)#D97706 | amber-600                       │
+│ █ Royal Burgundy (Sacrifice)#881337 | rose-900                        │
+├────────────────────────────────────────────────────────────────────────┤
+│ BACKGROUNDS & SURFACES                                                 │
+│ █ Warm Parchment (Light)    #FAF8F5 | Custom Off-White                  │
+│ █ Charcoal Slate (Dark)     #1E293B | slate-800                       │
+│ █ Soft Olive Green (Prayer) #15803D | green-700                       │
+└────────────────────────────────────────────────────────────────────────┘
+
+```
+
+#### 1. Deep Sacred Navy (`#0F172A` / `slate-900`) — Primary Brand Color
+
+* **Role:** Headers, primary structural navigation, deep backgrounds, and high-emphasis text.
+* **Psychology:** Navy grounds the application in stability, depth, and quiet reverence. It acts as the structural foundation of the interface.
+
+#### 2. Warm Amber / Holy Gold (`#D97706` / `amber-600`) — Primary Accent
+
+* **Role:** Primary action buttons ("Join Gathering", "I Prayed for This"), active state indicators, and glowing live room highlights.
+* **Psychology:** Gold/Amber symbolizes light, warmth, divine presence, and celebration. It immediately draws the eye to sacred interaction points without feeling aggressive like neon red or orange.
+
+#### 3. Muted Olive Green (`#15803D` / `green-700`) — Secondary Accent (Prayer & Growth)
+
+* **Role:** Active prayer request cards, answered prayer ("Testimony") badges, and connected status indicators.
+* **Psychology:** Olive represents peace, growth, and the garden of intercession.
+
+#### 4. Warm Parchment (`#FAF8F5`) — Light Mode Surface
+
+* **Role:** Default light mode background.
+* **Psychology:** Rather than blinding `#FFFFFF` white, a subtle parchment hue reduces eye strain during late-night prayer or long Bible study sessions.
+
+---
+
+### Typography System
+
+We use clean, highly readable, open-source sans-serif and serif typefaces available via Next.js Google Fonts (`next/font`):
+
+* **Display & Titles (Serif):** **Cinzel** or **Playfair Display**
+* *Usage:* Used sparingly for brand headers, group titles, and quote blocks (e.g., scripture passages). Gives an authentic, timeless quality.
+
+
+* **UI & Body Text (Sans-Serif):** **Plus Jakarta Sans** or **Inter**
+* *Usage:* Used for all navigation, chat channels, live meeting UI, buttons, and input fields for maximum legibility across mobile screens and low-resolution displays.
+
+
+
+---
+
+### Text-Based Logo (Wordmark) Guidelines
+
+Until a custom graphic icon is created, Koinonia will use an elegant, high-craft **Text Wordmark**.
+
+```
+  K O I N O N I A
+  ─── FELLOWSHIP ───
+
+```
+
+* **Typography:** Set in **Cinzel** or **Plus Jakarta Sans** (All-Caps), tracking/letter-spacing set to `tracking-[0.25em]` (wide letter-spacing).
+* **Color Implementation:**
+* In Light Mode: Deep Sacred Navy (`#0F172A`) with a subtle Warm Amber (`#D97706`) accent dot on the letter "I".
+* In Dark Mode: Pure Parchment (`#FAF8F5`) with a Warm Amber glow effect.
+
+
+* **Tailwind Class Implementation:**
+```tsx
+<span className="font-serif text-xl font-bold tracking-[0.2em] text-slate-900 dark:text-slate-50">
+  KOINONIA<span className="text-amber-600">.</span>
+</span>
+
+```
+
+
+
+---
+
+### Tailwind CSS Color Tokens Config (`tailwind.config.ts`)
+
+To ensure Google Antigravity implements these exact colors across all components, add this configuration:
+
+```typescript
+// tailwind.config.ts preview token setup
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        koinonia: {
+          navy: '#0F172A',     // Primary structural
+          amber: '#D97706',    // Primary action / Light
+          olive: '#15803D',    // Prayer / Peace
+          burgundy: '#881337', // Worship highlight
+          parchment: '#FAF8F5' // Warm light surface
+        }
+      },
+      fontFamily: {
+        serif: ['var(--font-cinzel)', 'serif'],
+        sans: ['var(--font-plus-jakarta)', 'sans-serif'],
+      }
+    }
+  }
+}
+
+```
+
+---
+
