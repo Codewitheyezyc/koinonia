@@ -216,33 +216,37 @@ function DashboardSidebarContent({
               <span>Channels — {activeFellowship.name}</span>
             </div>
             <div className="space-y-0.5">
-              {channels.map((ch) => {
-                const isSelected = ch.id === effectiveChannelId || (!effectiveChannelId && ch.name === "general-chat");
-                const isUnread = unreadChannels[ch.id];
-                return (
-                  <Link
-                    key={ch.id}
-                    href={`/dashboard/fellowship/${activeFellowship.id}?channel=${ch.id}`}
-                    onClick={() => {
-                      markChannelAsRead(ch.id);
-                      handleClose();
-                    }}
-                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
-                      isSelected
-                        ? "bg-amber-600/15 text-amber-300 border border-amber-500/30"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {getChannelIcon(ch.type)}
-                      <span className="capitalize truncate">{ch.name.replace("-", " ")}</span>
-                    </div>
-                    {isUnread && !isSelected && (
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                    )}
-                  </Link>
-                );
-              })}
+              {(() => {
+                const notesCh = channels.find((c) => c.type === "notes");
+                const defaultCh = notesCh || channels[0];
+                return channels.map((ch) => {
+                  const isSelected = ch.id === effectiveChannelId || (!effectiveChannelId && ch.id === defaultCh?.id);
+                  const isUnread = unreadChannels[ch.id];
+                  return (
+                    <Link
+                      key={ch.id}
+                      href={`/dashboard/fellowship/${activeFellowship.id}?channel=${ch.id}`}
+                      onClick={() => {
+                        markChannelAsRead(ch.id);
+                        handleClose();
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
+                        isSelected
+                          ? "bg-amber-600/15 text-amber-300 border border-amber-500/30"
+                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {getChannelIcon(ch.type)}
+                        <span className="capitalize truncate">{ch.name.replace("-", " ")}</span>
+                      </div>
+                      {isUnread && !isSelected && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                      )}
+                    </Link>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}

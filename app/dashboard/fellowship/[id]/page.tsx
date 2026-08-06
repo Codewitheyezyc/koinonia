@@ -10,6 +10,7 @@ import ScriptureNotesChannel from "@/components/ScriptureNotesChannel";
 import MeetingRoomModal from "@/components/MeetingRoomModal";
 import ScriptureReaderDrawer from "@/components/ScriptureReaderDrawer";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import SplashScreen from "@/components/SplashScreen";
 import { Loader2, Video, Sparkles } from "lucide-react";
 
 export default function FellowshipDashboardPage({
@@ -51,9 +52,11 @@ export default function FellowshipDashboardPage({
 
       if (cData && cData.length > 0) {
         setChannels(cData);
+        // Default to notes channel if no ?channel= parameter is specified
+        const notesCh = cData.find((c) => c.type === "notes");
         const target = selectedChannelId
-          ? cData.find((c) => c.id === selectedChannelId) || cData[0]
-          : cData[0];
+          ? cData.find((c) => c.id === selectedChannelId) || notesCh || cData[0]
+          : notesCh || cData[0];
         setActiveChannel(target);
       }
       setLoading(false);
@@ -63,11 +66,7 @@ export default function FellowshipDashboardPage({
   }, [fellowshipId, selectedChannelId, supabase]);
 
   if (loading || !fellowship) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-slate-950 text-slate-100">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-      </div>
-    );
+    return <SplashScreen message="Opening Sanctuary Fellowship..." />;
   }
 
   return (

@@ -23,9 +23,9 @@ export default function MobileBottomNav({
   const prayerChannel = channels.find((c) => c.type === "prayer_board");
   const notesChannel = channels.find((c) => c.type === "notes");
 
-  const isChatActive = activeChannelId === chatChannel?.id || (!activeChannelId && chatChannel && pathname.includes("/fellowship/"));
+  const isNotesActive = activeChannelId === notesChannel?.id || (!activeChannelId && notesChannel && pathname.includes("/fellowship/"));
+  const isChatActive = activeChannelId === chatChannel?.id;
   const isPrayerActive = activeChannelId === prayerChannel?.id;
-  const isNotesActive = activeChannelId === notesChannel?.id;
   const isProfileActive = pathname === "/dashboard/profile";
   const isSettingsActive = pathname === "/dashboard/settings";
 

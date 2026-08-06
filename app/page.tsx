@@ -24,9 +24,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-600/30 selection:text-amber-200">
       {/* Top Navigation */}
-      <header className="h-20 px-6 sm:px-12 border-b border-slate-800/60 flex items-center justify-between max-w-7xl w-full mx-auto sticky top-0 bg-slate-950/80 backdrop-blur-md z-40">
-        <Link href="/" className="flex items-center gap-2 group">
-          <h1 className="font-serif text-2xl font-bold tracking-[0.2em] text-slate-50 uppercase">
+      <header className="h-20 px-4 sm:px-12 border-b border-slate-800/60 flex items-center justify-between max-w-7xl w-full mx-auto sticky top-0 bg-slate-950/80 backdrop-blur-md z-40">
+        <Link href="/" className="flex items-center gap-2 group shrink-0">
+          <h1 className="font-serif text-lg sm:text-2xl font-bold tracking-[0.15em] sm:tracking-[0.2em] text-slate-50 uppercase">
             KOINONIA<span className="text-amber-500 font-extrabold">.</span>
           </h1>
         </Link>
@@ -47,18 +47,18 @@ export default function Home() {
           </a>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <Link
             href="/login"
-            className="text-xs font-semibold text-slate-300 hover:text-amber-400 transition"
+            className="text-xs font-semibold text-slate-300 hover:text-amber-400 transition px-2 py-1 rounded-lg hover:bg-slate-900"
           >
             Sign In
           </Link>
           <Link
             href="/signup"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-semibold text-xs shadow-lg shadow-amber-950/30 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-semibold text-xs shadow-lg shadow-amber-950/30 transition cursor-pointer whitespace-nowrap"
           >
-            Gather Now
+            <span>Gather Now</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Users, Plus, Heart, Sparkles, Loader2 } from "lucide-react";
 import CreateFellowshipModal from "@/components/CreateFellowshipModal";
 import DashboardNavbar from "@/components/DashboardNavbar";
+import SplashScreen from "@/components/SplashScreen";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -49,11 +50,7 @@ export default function DashboardPage() {
   }, [router, supabase]);
 
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-slate-950 text-slate-100">
-        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-      </div>
-    );
+    return <SplashScreen message="Entering Fellowship Hub..." />;
   }
 
   return (
