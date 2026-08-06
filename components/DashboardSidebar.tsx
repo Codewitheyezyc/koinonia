@@ -4,8 +4,9 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Plus, Hash, BookOpen, Heart, Users, LogOut, User, Sparkles, X } from "lucide-react";
+import { Plus, Hash, BookOpen, Heart, Users, LogOut, User, Sparkles, X, Trash2 } from "lucide-react";
 import CreateFellowshipModal from "./CreateFellowshipModal";
+import DeleteFellowshipModal from "./DeleteFellowshipModal";
 import { useMobileSidebar } from "@/lib/context/MobileSidebarContext";
 import { useUnreadNotifications } from "@/lib/context/UnreadNotificationContext";
 
@@ -46,14 +47,17 @@ function DashboardSidebarContent({
   const [fellowships, setFellowships] = useState<Fellowship[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Modals
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deletingFellowship, setDeletingFellowship] = useState<Fellowship | null>(null);
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const supabase = createClient();
 
-  // Extract fellowship ID from route URL automatically if not passed explicitly
   const pathFellowshipId = pathname.startsWith("/dashboard/fellowship/")
     ? pathname.split("/dashboard/fellowship/")[1]?.split("/")[0]?.split("?")[0]
     : undefined;
@@ -64,8 +68,8 @@ function DashboardSidebarContent({
   const loadFellowships = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    setCurrentUserId(user.id);
 
-    // Fetch user profile
     const { data: profile } = await supabase
       .from("profiles")
       .select("*")
@@ -73,7 +77,6 @@ function DashboardSidebarContent({
       .single();
     setUserProfile(profile || { full_name: user.email?.split("@")[0] });
 
-    // Fetch fellowships user is member of
     const { data: memberRows } = await supabase
       .from("fellowship_members")
       .select("fellowships(*)")
@@ -83,7 +86,6 @@ function DashboardSidebarContent({
       const list = memberRows.map((r: any) => r.fellowships).filter(Boolean);
       setFellowships(list);
 
-      // If currently viewing a fellowship, fetch its channels
       const targetId = effectiveFellowshipId || (list[0] ? list[0].id : null);
       if (targetId) {
         const { data: channelData } = await supabase
@@ -99,20 +101,18 @@ function DashboardSidebarContent({
   useEffect(() => {
     loadFellowships();
 
-    // Subscribe to real-time changes on fellowship_members for instant sidebar updates
     const channelId = `sidebar-realtime-${Math.random().toString(36).substring(2, 9)}`;
     const subscription = supabase
       .channel(channelId)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "fellowship_members",
-        },
-        () => {
-          loadFellowships();
-        }
+        { event: "*", schema: "public", table: "fellowship_members" },
+        () => loadFellowships()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "fellowships" },
+        () => loadFellowships()
       )
       .subscribe();
 
@@ -125,6 +125,14 @@ function DashboardSidebarContent({
     await loadFellowships();
     handleClose();
     router.push(`/dashboard/fellowship/${newFellowshipId}`);
+  };
+
+  const handleFellowshipDeleted = async () => {
+    await loadFellowships();
+    setDeletingFellowship(null);
+    handleClose();
+    router.push("/dashboard");
+    router.refresh();
   };
 
   const activeFellowship = fellowships.find((f) => f.id === effectiveFellowshipId) || fellowships[0];
@@ -156,11 +164,12 @@ function DashboardSidebarContent({
         </Link>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsCreateModalOpen(true)}
             title="Create New Fellowship"
-            className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-semibold transition cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
+            <span>New</span>
           </button>
           <button
             onClick={handleClose}
@@ -173,35 +182,60 @@ function DashboardSidebarContent({
 
       {/* Fellowship Selector Bar */}
       <div className="p-3 border-b border-slate-800/60 bg-slate-900/40">
-        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-1">
-          Your Fellowships ({fellowships.length})
+        <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-1">
+          <span>Your Fellowships ({fellowships.length})</span>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer lowercase hover:underline"
+          >
+            + create
+          </button>
         </div>
         {fellowships.length === 0 ? (
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsCreateModalOpen(true)}
             className="w-full p-2.5 rounded-lg border border-dashed border-slate-800 text-xs text-slate-400 hover:text-amber-400 hover:border-amber-500/50 flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             Create First Fellowship
           </button>
         ) : (
-          <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+          <div className="space-y-1 max-h-44 overflow-y-auto pr-1">
             {fellowships.map((f) => {
               const isActive = f.id === activeFellowship?.id;
+              const isHost = f.created_by === currentUserId;
               return (
-                <Link
+                <div
                   key={f.id}
-                  href={`/dashboard/fellowship/${f.id}`}
-                  onClick={handleClose}
-                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
+                  className={`group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
                     isActive
                       ? "bg-slate-800 text-slate-100 border border-slate-700 shadow-sm"
                       : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/80"
                   }`}
                 >
-                  <Users className={`w-3.5 h-3.5 ${isActive ? "text-amber-400" : "text-slate-500"}`} />
-                  <span className="truncate">{f.name}</span>
-                </Link>
+                  <Link
+                    href={`/dashboard/fellowship/${f.id}`}
+                    onClick={handleClose}
+                    className="flex items-center gap-2 min-w-0 flex-1"
+                  >
+                    <Users className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-amber-400" : "text-slate-500"}`} />
+                    <span className="truncate">{f.name}</span>
+                  </Link>
+
+                  {/* Delete button (Host/Creator only) */}
+                  {isHost && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingFellowship(f);
+                      }}
+                      title="Delete Fellowship"
+                      className="opacity-60 group-hover:opacity-100 p-1 rounded hover:bg-rose-950/60 hover:text-rose-400 transition cursor-pointer text-slate-500"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -296,11 +330,22 @@ function DashboardSidebarContent({
         </div>
       )}
 
+      {/* Modals */}
       <CreateFellowshipModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onCreated={handleFellowshipCreated}
       />
+
+      {deletingFellowship && (
+        <DeleteFellowshipModal
+          isOpen={!!deletingFellowship}
+          onClose={() => setDeletingFellowship(null)}
+          fellowshipId={deletingFellowship.id}
+          fellowshipName={deletingFellowship.name}
+          onDeleted={handleFellowshipDeleted}
+        />
+      )}
     </>
   );
 }

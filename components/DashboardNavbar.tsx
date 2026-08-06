@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Check, BookOpen, User, Plus } from "lucide-react";
+import { Copy, Check, BookOpen, User, Plus, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import CreateFellowshipModal from "./CreateFellowshipModal";
+import DeleteFellowshipModal from "./DeleteFellowshipModal";
 
 interface DashboardNavbarProps {
+  fellowshipId?: string;
   fellowshipName?: string;
   channelName?: string;
   inviteCode?: string;
@@ -15,6 +17,7 @@ interface DashboardNavbarProps {
 }
 
 export default function DashboardNavbar({
+  fellowshipId,
   fellowshipName = "Fellowship Gathering",
   channelName = "general-chat",
   inviteCode,
@@ -22,13 +25,15 @@ export default function DashboardNavbar({
 }: DashboardNavbarProps) {
   const [copied, setCopied] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [isHost, setIsHost] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    async function loadUserProfile() {
+    async function loadUserAndPermissions() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -39,9 +44,30 @@ export default function DashboardNavbar({
         .single();
 
       setUserProfile(profile || { full_name: user.email?.split("@")[0] });
+
+      if (fellowshipId) {
+        // Check if user is host or creator
+        const { data: fData } = await supabase
+          .from("fellowships")
+          .select("created_by")
+          .eq("id", fellowshipId)
+          .single();
+
+        if (fData?.created_by === user.id) {
+          setIsHost(true);
+        } else {
+          const { data: member } = await supabase
+            .from("fellowship_members")
+            .select("role")
+            .eq("fellowship_id", fellowshipId)
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (member?.role === "host") setIsHost(true);
+        }
+      }
     }
-    loadUserProfile();
-  }, [supabase]);
+    loadUserAndPermissions();
+  }, [fellowshipId, supabase]);
 
   const copyInvite = () => {
     if (!inviteCode) return;
@@ -54,6 +80,12 @@ export default function DashboardNavbar({
   const handleFellowshipCreated = (newId: string) => {
     setIsCreateModalOpen(false);
     router.push(`/dashboard/fellowship/${newId}`);
+  };
+
+  const handleFellowshipDeleted = () => {
+    setIsDeleteModalOpen(false);
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
@@ -71,7 +103,7 @@ export default function DashboardNavbar({
 
         {/* Header Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Create New Fellowship Button (Always accessible on Mobile & Desktop) */}
+          {/* Create New Fellowship Button */}
           <button
             onClick={() => setIsCreateModalOpen(true)}
             title="Create New Fellowship"
@@ -80,6 +112,18 @@ export default function DashboardNavbar({
             <Plus className="w-4 h-4 shrink-0 text-amber-400" />
             <span className="hidden sm:inline">New Fellowship</span>
           </button>
+
+          {/* Delete Fellowship Button (Host/Creator only) */}
+          {isHost && fellowshipId && (
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              title="Delete Fellowship"
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4 text-rose-400 shrink-0" />
+              <span className="hidden md:inline">Delete</span>
+            </button>
+          )}
 
           {onOpenBible && (
             <button
@@ -124,6 +168,16 @@ export default function DashboardNavbar({
         onClose={() => setIsCreateModalOpen(false)}
         onCreated={handleFellowshipCreated}
       />
+
+      {isDeleteModalOpen && fellowshipId && (
+        <DeleteFellowshipModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          fellowshipId={fellowshipId}
+          fellowshipName={fellowshipName}
+          onDeleted={handleFellowshipDeleted}
+        />
+      )}
     </>
   );
 }

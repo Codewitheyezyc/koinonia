@@ -73,6 +73,7 @@ export default function FellowshipDashboardPage({
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
       {/* Primary Header */}
       <DashboardNavbar
+        fellowshipId={fellowshipId}
         fellowshipName={fellowship.name}
         channelName={activeChannel?.name || "general-chat"}
         inviteCode={fellowship.invite_code}
