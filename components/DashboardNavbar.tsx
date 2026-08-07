@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Check, BookOpen, User, Plus, Trash2, Video, Share2 } from "lucide-react";
+import { Copy, Check, BookOpen, User, Plus, Trash2, Video, Share2, HardDrive } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import CreateFellowshipModal from "./CreateFellowshipModal";
 import DeleteFellowshipModal from "./DeleteFellowshipModal";
+import MeetingRecordingsModal from "./MeetingRecordingsModal";
 
 interface DashboardNavbarProps {
   fellowshipId?: string;
@@ -29,6 +30,7 @@ export default function DashboardNavbar({
   const [isHost, setIsHost] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isRecordingsModalOpen, setIsRecordingsModalOpen] = useState(false);
 
   const router = useRouter();
   const supabase = createClient();
@@ -110,7 +112,7 @@ export default function DashboardNavbar({
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Create New Cell Button */}
           <button
             onClick={() => setIsCreateModalOpen(true)}
@@ -120,6 +122,18 @@ export default function DashboardNavbar({
             <Plus className="w-3.5 h-3.5 shrink-0 text-amber-400" />
             <span className="hidden sm:inline">New Cell</span>
           </button>
+
+          {/* View Recordings & Archives Button */}
+          {fellowshipId && (
+            <button
+              onClick={() => setIsRecordingsModalOpen(true)}
+              title="View & Download Meeting Recordings"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 hover:border-amber-500/40 text-xs font-medium transition cursor-pointer"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="hidden md:inline">Recordings</span>
+            </button>
+          )}
 
           {/* Copy Live Meeting Link */}
           {fellowshipId && (
@@ -196,6 +210,16 @@ export default function DashboardNavbar({
           fellowshipId={fellowshipId}
           fellowshipName={fellowshipName}
           onDeleted={handleFellowshipDeleted}
+        />
+      )}
+
+      {isRecordingsModalOpen && fellowshipId && (
+        <MeetingRecordingsModal
+          isOpen={isRecordingsModalOpen}
+          onClose={() => setIsRecordingsModalOpen(false)}
+          fellowshipId={fellowshipId}
+          fellowshipName={fellowshipName}
+          isHost={isHost}
         />
       )}
     </>

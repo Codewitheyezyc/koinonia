@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Send, Image as ImageIcon, Loader2, Sparkles, X,
-  Smile, Plus, Heart, Flame
+  Smile, Plus, Heart, Flame, Maximize2, Download
 } from "lucide-react";
 import { FormattedAuthorName } from "@/components/GuestBadge";
+import FormattedMessageContent from "@/components/FormattedMessageContent";
+import ImageLightboxModal from "@/components/ImageLightboxModal";
 
 interface Reaction {
   id: string;
@@ -55,6 +57,10 @@ export default function ChatChannel({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
 
+  // Image Lightbox Modal state
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [lightboxImageAlt, setLightboxImageAlt] = useState<string>("Shared image");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -91,7 +97,6 @@ export default function ChatChannel({
           if (rxData) allReactions = rxData;
         }
 
-        // Attach reactions to messages
         const messagesWithRx = msgs.map((m) => ({
           ...m,
           reactions: allReactions.filter((r) => r.message_id === m.id),
@@ -255,7 +260,6 @@ export default function ChatChannel({
     }
   };
 
-  // Toggle or add reaction to a message
   const handleToggleReaction = async (messageId: string, emoji: string) => {
     if (!currentUser) return;
     setActiveReactionMessageId(null);
@@ -266,7 +270,6 @@ export default function ChatChannel({
     );
 
     if (existingReaction) {
-      // Optimistic delete
       setMessages((prev) =>
         prev.map((msg) => {
           if (msg.id === messageId) {
@@ -284,7 +287,6 @@ export default function ChatChannel({
         .delete()
         .eq("id", existingReaction.id);
     } else {
-      // Optimistic insert
       const tempId = `temp-${Date.now()}`;
       const tempRx: Reaction = {
         id: tempId,
@@ -341,7 +343,6 @@ export default function ChatChannel({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  // Group reactions by emoji
   const groupReactions = (reactions: Reaction[] = []) => {
     const map = new Map<string, { count: number; users: string[]; hasReacted: boolean }>();
     reactions.forEach((r) => {
@@ -373,7 +374,7 @@ export default function ChatChannel({
               Welcome to #{channelName.replace("-", " ")}
             </p>
             <p className="text-xs max-w-sm">
-              This is the beginning of fellowship chatter. Share words of encouragement, scripture reflections, and prayer notes.
+              Share words of encouragement, scripture reflections, and prayer notes. Markdown formatting and pasted long messages are supported.
             </p>
           </div>
         ) : (
@@ -391,7 +392,7 @@ export default function ChatChannel({
                   {msg.profiles?.full_name?.charAt(0).toUpperCase() || "U"}
                 </div>
 
-                <div className={`max-w-md space-y-1.5 ${isMe ? "items-end text-right" : ""}`}>
+                <div className={`max-w-xl space-y-1.5 ${isMe ? "items-end text-right" : ""}`}>
                   {/* Author Header with Stylized Guest Badge */}
                   <div className={`flex items-center gap-2 text-xs ${isMe ? "justify-end" : ""}`}>
                     <FormattedAuthorName
@@ -401,8 +402,8 @@ export default function ChatChannel({
                     <span className="text-[10px] text-slate-500">{formatTime(msg.created_at)}</span>
                   </div>
 
-                  {/* Message Bubble Container */}
-                  <div className="relative inline-block text-left">
+                  {/* Message Bubble Container with Rich Markdown/Scripture Formatter */}
+                  <div className="relative inline-block text-left max-w-full">
                     <div
                       className={`p-3.5 rounded-2xl text-sm leading-relaxed space-y-2 shadow-md ${
                         isMe
@@ -410,22 +411,34 @@ export default function ChatChannel({
                           : "bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none"
                       }`}
                     >
-                      <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                      {/* Rich Formatted Content */}
+                      <FormattedMessageContent
+                        content={msg.content}
+                        className={isMe ? "text-amber-100" : "text-slate-200"}
+                      />
 
+                      {/* Image Attachment with Lightbox Trigger & Quick Download */}
                       {msg.attachment_url && (
-                        <div className="pt-1">
-                          <a
-                            href={msg.attachment_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block rounded-lg overflow-hidden border border-slate-700/80 hover:opacity-90 transition"
+                        <div className="pt-1.5 relative group/img">
+                          <div
+                            onClick={() => {
+                              setLightboxImageUrl(msg.attachment_url!);
+                              setLightboxImageAlt(msg.content || "Attached image");
+                            }}
+                            className="block rounded-xl overflow-hidden border border-slate-700/80 hover:border-amber-500/50 cursor-pointer transition relative shadow-lg"
                           >
                             <img
                               src={msg.attachment_url}
                               alt="Attachment"
-                              className="max-h-60 w-full object-cover rounded-lg"
+                              className="max-h-72 w-full object-cover rounded-xl group-hover/img:scale-[1.01] transition-transform duration-200"
                             />
-                          </a>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/90 text-amber-400 text-xs font-semibold shadow-xl border border-amber-500/40">
+                                <Maximize2 className="w-3.5 h-3.5" />
+                                <span>View & Download</span>
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -495,7 +508,6 @@ export default function ChatChannel({
                         </button>
                       ))}
 
-                      {/* Add reaction plus button */}
                       <button
                         onClick={() =>
                           setActiveReactionMessageId(
@@ -542,7 +554,7 @@ export default function ChatChannel({
           <div className="flex items-center justify-between text-xs text-slate-400 pb-1 border-b border-slate-800">
             <span className="font-semibold text-slate-200 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Kingdom & Faith Emojis
+              Kingdom & Worship Emojis
             </span>
             <button
               onClick={() => setShowEmojiPicker(false)}
@@ -604,7 +616,7 @@ export default function ChatChannel({
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={`Message #${channelName.replace("-", " ")}...`}
+            placeholder={`Message #${channelName.replace("-", " ")}... (supports bold, verses & formatting)`}
             className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition"
           />
 
@@ -617,6 +629,15 @@ export default function ChatChannel({
           </button>
         </form>
       </div>
+
+      {/* Image Lightbox Viewer Modal with Direct Download to Computer */}
+      {lightboxImageUrl && (
+        <ImageLightboxModal
+          imageUrl={lightboxImageUrl}
+          imageAlt={lightboxImageAlt}
+          onClose={() => setLightboxImageUrl(null)}
+        />
+      )}
     </div>
   );
 }

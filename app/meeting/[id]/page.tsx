@@ -16,6 +16,7 @@ import {
   Send, Smile, X, Heart, Flame
 } from "lucide-react";
 import GuestBadge, { FormattedAuthorName } from "@/components/GuestBadge";
+import FormattedMessageContent from "@/components/FormattedMessageContent";
 
 const WORSHIP_REACTIONS = [
   { icon: "🔥", label: "Glory!", color: "text-amber-400" },
@@ -467,7 +468,10 @@ export default function StandaloneMeetingPage({
                       <FormattedAuthorName name={msg.senderName} className="font-semibold text-slate-200 text-[11px]" />
                       <span className="text-[9px] text-slate-500">{msg.time}</span>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed break-words">{msg.content}</p>
+                    <FormattedMessageContent
+                      content={msg.content}
+                      className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words"
+                    />
                   </div>
                 ))
               )}
