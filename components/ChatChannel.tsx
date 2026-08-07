@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Send, Image as ImageIcon, Loader2, Sparkles, X,
-  Smile, Plus, Heart, Flame, Maximize2, Download
+  Smile, Plus, Maximize2, Reply, AtSign, Check, CheckCheck
 } from "lucide-react";
 import { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
@@ -20,6 +20,12 @@ interface Reaction {
   };
 }
 
+interface ReplySnippet {
+  id: string;
+  senderName: string;
+  content: string;
+}
+
 interface Message {
   id: string;
   channel_id: string;
@@ -27,6 +33,8 @@ interface Message {
   content: string;
   attachment_url?: string;
   created_at: string;
+  reply_to_id?: string;
+  reply_snippet?: ReplySnippet;
   profiles?: {
     full_name: string;
     avatar_url?: string;
@@ -34,11 +42,52 @@ interface Message {
   reactions?: Reaction[];
 }
 
+interface MemberProfile {
+  id: string;
+  full_name: string;
+}
+
 const COMMON_EMOJIS = [
   "🔥", "🙌", "🙏", "❤️", "👑", "🕊️",
   "✨", "😄", "🎉", "💡", "✝️", "📖",
   "👏", "💯", "🌟", "🛡️"
 ];
+
+// Helper to format WhatsApp-style day divider
+function getDayDividerLabel(isoDateString: string): string {
+  const date = new Date(isoDateString);
+  const now = new Date();
+  
+  const isToday =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  if (isToday) return "Today";
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) return "Yesterday";
+
+  // Check if in current year
+  const isCurrentYear = date.getFullYear() === now.getFullYear();
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: isCurrentYear ? undefined : "numeric",
+  });
+}
+
+function getDayKey(isoDateString: string): string {
+  const d = new Date(isoDateString);
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
 
 export default function ChatChannel({
   channelId,
@@ -57,6 +106,14 @@ export default function ChatChannel({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
 
+  // WhatsApp Quoted Reply state
+  const [replyingTo, setReplyingTo] = useState<{ id: string; senderName: string; content: string } | null>(null);
+
+  // @ Mention tagging state
+  const [members, setMembers] = useState<MemberProfile[]>([]);
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+
   // Image Lightbox Modal state
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   const [lightboxImageAlt, setLightboxImageAlt] = useState<string>("Shared image");
@@ -64,6 +121,7 @@ export default function ChatChannel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const textInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   const scrollToBottom = () => {
@@ -75,6 +133,27 @@ export default function ChatChannel({
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
+
+      // Load fellowship members for @tagging autocomplete
+      const { data: fellowshipData } = await supabase
+        .from("channels")
+        .select("fellowship_id")
+        .eq("id", channelId)
+        .single();
+
+      if (fellowshipData?.fellowship_id) {
+        const { data: memberData } = await supabase
+          .from("fellowship_members")
+          .select("user_id, profiles:user_id(id, full_name)")
+          .eq("fellowship_id", fellowshipData.fellowship_id);
+
+        if (memberData) {
+          const formattedMembers = memberData
+            .map((m: any) => m.profiles)
+            .filter(Boolean) as MemberProfile[];
+          setMembers(formattedMembers);
+        }
+      }
 
       // 1. Fetch initial messages with profiles
       const { data: msgs, error: msgError } = await supabase
@@ -136,6 +215,8 @@ export default function ChatChannel({
             content: payload.new.content,
             attachment_url: payload.new.attachment_url,
             created_at: payload.new.created_at,
+            reply_to_id: payload.new.reply_to_id,
+            reply_snippet: payload.new.reply_snippet,
             profiles: profile || { full_name: "Believer" },
             reactions: [],
           };
@@ -203,6 +284,32 @@ export default function ChatChannel({
     };
   }, [channelId, supabase]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setInputText(val);
+
+    // Detect @ mention trigger
+    const cursor = e.target.selectionStart || 0;
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastAtMatch = textBeforeCursor.match(/@([a-zA-Z0-9_ -]*)$/);
+
+    if (lastAtMatch) {
+      setMentionQuery(lastAtMatch[1].toLowerCase());
+      setShowMentionSuggestions(true);
+    } else {
+      setShowMentionSuggestions(false);
+    }
+  };
+
+  const handleSelectMention = (memberName: string) => {
+    // Replace @query with @MemberName and add space
+    const cleanName = memberName.replace(/\s+/g, "");
+    const updated = inputText.replace(/@[a-zA-Z0-9_ -]*$/, `@${cleanName} `);
+    setInputText(updated);
+    setShowMentionSuggestions(false);
+    textInputRef.current?.focus();
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -241,15 +348,22 @@ export default function ChatChannel({
       }
 
       const contentToSend = inputText.trim() || "Shared an attachment";
+      const snippetToAttach = replyingTo ? { ...replyingTo } : undefined;
+      const replyToId = replyingTo?.id;
+
       setInputText("");
+      setReplyingTo(null);
       removeSelectedFile();
       setShowEmojiPicker(false);
+      setShowMentionSuggestions(false);
 
       const { error } = await supabase.from("messages").insert({
         channel_id: channelId,
         user_id: currentUser.id,
         content: contentToSend,
         attachment_url: uploadedAttachmentUrl,
+        reply_to_id: replyToId,
+        reply_snippet: snippetToAttach,
       });
 
       if (error) throw error;
@@ -363,10 +477,15 @@ export default function ChatChannel({
     );
   }
 
+  // Filter members for @mention dropdown
+  const filteredMembers = members.filter((m) =>
+    m.full_name.toLowerCase().includes(mentionQuery)
+  );
+
   return (
     <div className="flex-1 flex flex-col justify-between h-full bg-slate-900/30 overflow-hidden pb-16 md:pb-0 relative">
       {/* Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-4 sm:pt-6 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-4 sm:pt-6 space-y-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-2 text-slate-500">
             <Sparkles className="w-8 h-8 text-amber-500/40" />
@@ -374,153 +493,204 @@ export default function ChatChannel({
               Welcome to #{channelName.replace("-", " ")}
             </p>
             <p className="text-xs max-w-sm">
-              Share words of encouragement, scripture reflections, and prayer notes. Markdown formatting and pasted long messages are supported.
+              Share words of encouragement, scripture reflections, and prayer notes. Type <strong>@</strong> to mention brethren, or tap <strong>Reply</strong> on any message.
             </p>
           </div>
         ) : (
-          messages.map((msg) => {
+          messages.map((msg, index) => {
             const isMe = msg.user_id === currentUser?.id;
             const groupedRx = groupReactions(msg.reactions);
 
-            return (
-              <div
-                key={msg.id}
-                className={`flex items-start gap-3 group relative ${isMe ? "flex-row-reverse" : ""}`}
-              >
-                {/* User Avatar */}
-                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 shadow-sm">
-                  {msg.profiles?.full_name?.charAt(0).toUpperCase() || "U"}
-                </div>
+            // WhatsApp Day Divider Calculation
+            const currentDayKey = getDayKey(msg.created_at);
+            const prevDayKey = index > 0 ? getDayKey(messages[index - 1].created_at) : null;
+            const isNewDay = currentDayKey !== prevDayKey;
 
-                <div className={`max-w-xl space-y-1.5 ${isMe ? "items-end text-right" : ""}`}>
-                  {/* Author Header with Stylized Guest Badge */}
-                  <div className={`flex items-center gap-2 text-xs ${isMe ? "justify-end" : ""}`}>
-                    <FormattedAuthorName
-                      name={msg.profiles?.full_name}
-                      className={`font-semibold ${isMe ? "text-amber-300" : "text-slate-300"}`}
-                    />
-                    <span className="text-[10px] text-slate-500">{formatTime(msg.created_at)}</span>
+            return (
+              <div key={msg.id} className="space-y-4">
+                {/* Centered WhatsApp-Style Day Divider Pill */}
+                {isNewDay && (
+                  <div className="flex items-center justify-center my-4 sticky top-1 z-10">
+                    <span className="px-3.5 py-1 rounded-full bg-slate-950/90 border border-slate-800 text-[11px] font-semibold text-slate-300 shadow-xl backdrop-blur-md">
+                      {getDayDividerLabel(msg.created_at)}
+                    </span>
+                  </div>
+                )}
+
+                <div
+                  className={`flex items-start gap-2.5 group relative ${isMe ? "flex-row-reverse" : ""}`}
+                >
+                  {/* User Avatar */}
+                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 shadow-sm">
+                    {msg.profiles?.full_name?.charAt(0).toUpperCase() || "U"}
                   </div>
 
-                  {/* Message Bubble Container with Rich Markdown/Scripture Formatter */}
-                  <div className="relative inline-block text-left max-w-full">
-                    <div
-                      className={`p-3.5 rounded-2xl text-sm leading-relaxed space-y-2 shadow-md ${
-                        isMe
-                          ? "bg-gradient-to-br from-amber-600/25 to-amber-700/20 border border-amber-500/40 text-amber-100 rounded-tr-none"
-                          : "bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none"
-                      }`}
-                    >
-                      {/* Rich Formatted Content */}
-                      <FormattedMessageContent
-                        content={msg.content}
-                        className={isMe ? "text-amber-100" : "text-slate-200"}
+                  <div className={`max-w-xl space-y-1 ${isMe ? "items-end text-right" : ""}`}>
+                    {/* Author Header with Stylized Guest Badge */}
+                    <div className={`flex items-center gap-2 text-xs ${isMe ? "justify-end" : ""}`}>
+                      <FormattedAuthorName
+                        name={msg.profiles?.full_name}
+                        className={`font-semibold ${isMe ? "text-amber-300" : "text-slate-300"}`}
                       />
+                      <span className="text-[10px] text-slate-500 font-mono">{formatTime(msg.created_at)}</span>
+                    </div>
 
-                      {/* Image Attachment with Lightbox Trigger & Quick Download */}
-                      {msg.attachment_url && (
-                        <div className="pt-1.5 relative group/img">
-                          <div
-                            onClick={() => {
-                              setLightboxImageUrl(msg.attachment_url!);
-                              setLightboxImageAlt(msg.content || "Attached image");
-                            }}
-                            className="block rounded-xl overflow-hidden border border-slate-700/80 hover:border-amber-500/50 cursor-pointer transition relative shadow-lg"
-                          >
-                            <img
-                              src={msg.attachment_url}
-                              alt="Attachment"
-                              className="max-h-72 w-full object-cover rounded-xl group-hover/img:scale-[1.01] transition-transform duration-200"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/90 text-amber-400 text-xs font-semibold shadow-xl border border-amber-500/40">
-                                <Maximize2 className="w-3.5 h-3.5" />
-                                <span>View & Download</span>
-                              </span>
+                    {/* Message Bubble Container */}
+                    <div className="relative inline-block text-left max-w-full">
+                      <div
+                        className={`p-3 rounded-2xl text-sm leading-relaxed space-y-2 shadow-md ${
+                          isMe
+                            ? "bg-gradient-to-br from-amber-600/25 to-amber-700/20 border border-amber-500/40 text-amber-100 rounded-tr-none"
+                            : "bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none"
+                        }`}
+                      >
+                        {/* WhatsApp-Style Quoted Snippet if Replying */}
+                        {msg.reply_snippet && (
+                          <div className="p-2 pl-2.5 rounded-xl bg-slate-950/60 border-l-4 border-amber-400 text-xs space-y-0.5 mb-1.5 opacity-90 shadow-inner">
+                            <span className="font-bold text-amber-400 text-[11px]">
+                              {msg.reply_snippet.senderName}
+                            </span>
+                            <p className="text-slate-300 truncate text-[11px]">
+                              {msg.reply_snippet.content}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Rich Formatted Content with @mentions, bold, quotes, links */}
+                        <FormattedMessageContent
+                          content={msg.content}
+                          className={isMe ? "text-amber-100" : "text-slate-200"}
+                        />
+
+                        {/* Image Attachment with Lightbox Trigger & Download */}
+                        {msg.attachment_url && (
+                          <div className="pt-1.5 relative group/img">
+                            <div
+                              onClick={() => {
+                                setLightboxImageUrl(msg.attachment_url!);
+                                setLightboxImageAlt(msg.content || "Attached image");
+                              }}
+                              className="block rounded-xl overflow-hidden border border-slate-700/80 hover:border-amber-500/50 cursor-pointer transition relative shadow-lg"
+                            >
+                              <img
+                                src={msg.attachment_url}
+                                alt="Attachment"
+                                className="max-h-72 w-full object-cover rounded-xl group-hover/img:scale-[1.01] transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/90 text-amber-400 text-xs font-semibold shadow-xl border border-amber-500/40">
+                                  <Maximize2 className="w-3.5 h-3.5" />
+                                  <span>View & Download</span>
+                                </span>
+                              </div>
                             </div>
                           </div>
+                        )}
+
+                        {/* Timestamp & Delivery status bottom right */}
+                        <div className="flex items-center justify-end gap-1 pt-0.5 text-[9px] text-slate-400 font-mono opacity-80">
+                          <span>{formatTime(msg.created_at)}</span>
+                          {isMe && <CheckCheck className="w-3 h-3 text-amber-400 inline" />}
+                        </div>
+                      </div>
+
+                      {/* Quick Action Popover Button on Hover (Reply & React) */}
+                      <div
+                        className={`absolute -top-3 ${
+                          isMe ? "left-0 -translate-x-full pl-2" : "right-0 translate-x-full pr-2"
+                        } opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 z-10`}
+                      >
+                        {/* WhatsApp-style Reply Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyingTo({
+                              id: msg.id,
+                              senderName: msg.profiles?.full_name || "Believer",
+                              content: msg.content,
+                            });
+                            textInputRef.current?.focus();
+                          }}
+                          title="Reply to this message"
+                          className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                        >
+                          <Reply className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Emoji React Button */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveReactionMessageId(
+                              activeReactionMessageId === msg.id ? null : msg.id
+                            )
+                          }
+                          title="React with Emoji"
+                          className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                        >
+                          <Smile className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Quick Reaction Popover Menu */}
+                      {activeReactionMessageId === msg.id && (
+                        <div
+                          className={`absolute -top-12 ${
+                            isMe ? "right-0" : "left-0"
+                          } z-30 flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100`}
+                        >
+                          {COMMON_EMOJIS.slice(0, 7).map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => handleToggleReaction(msg.id, emoji)}
+                              className="p-1 hover:scale-125 hover:bg-slate-800 rounded-lg text-base transition-transform cursor-pointer"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setActiveReactionMessageId(null)}
+                            className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition cursor-pointer ml-0.5"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       )}
                     </div>
 
-                    {/* Quick Reaction Action Button on Hover */}
-                    <div
-                      className={`absolute -top-3 ${
-                        isMe ? "left-0 -translate-x-full pl-2" : "right-0 translate-x-full pr-2"
-                      } opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 z-10`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setActiveReactionMessageId(
-                            activeReactionMessageId === msg.id ? null : msg.id
-                          )
-                        }
-                        title="React with Emoji"
-                        className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
-                      >
-                        <Smile className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Quick Reaction Popover Menu */}
-                    {activeReactionMessageId === msg.id && (
-                      <div
-                        className={`absolute -top-12 ${
-                          isMe ? "right-0" : "left-0"
-                        } z-30 flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100`}
-                      >
-                        {COMMON_EMOJIS.slice(0, 7).map((emoji) => (
+                    {/* Reaction Badges / Pills under message */}
+                    {groupedRx.length > 0 && (
+                      <div className={`flex flex-wrap gap-1.5 pt-1 ${isMe ? "justify-end" : ""}`}>
+                        {groupedRx.map((rx) => (
                           <button
-                            key={emoji}
-                            onClick={() => handleToggleReaction(msg.id, emoji)}
-                            className="p-1 hover:scale-125 hover:bg-slate-800 rounded-lg text-base transition-transform cursor-pointer"
+                            key={rx.emoji}
+                            onClick={() => handleToggleReaction(msg.id, rx.emoji)}
+                            title={`${rx.users.join(", ")} reacted with ${rx.emoji}`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
+                              rx.hasReacted
+                                ? "bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm"
+                                : "bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600"
+                            }`}
                           >
-                            {emoji}
+                            <span>{rx.emoji}</span>
+                            <span className="text-[11px] font-bold">{rx.count}</span>
                           </button>
                         ))}
+
                         <button
-                          onClick={() => setActiveReactionMessageId(null)}
-                          className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition cursor-pointer ml-0.5"
+                          onClick={() =>
+                            setActiveReactionMessageId(
+                              activeReactionMessageId === msg.id ? null : msg.id
+                            )
+                          }
+                          className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 text-xs transition cursor-pointer"
+                          title="Add reaction"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <Plus className="w-3 h-3" />
                         </button>
                       </div>
                     )}
                   </div>
-
-                  {/* Reaction Badges / Pills under message */}
-                  {groupedRx.length > 0 && (
-                    <div className={`flex flex-wrap gap-1.5 pt-1 ${isMe ? "justify-end" : ""}`}>
-                      {groupedRx.map((rx) => (
-                        <button
-                          key={rx.emoji}
-                          onClick={() => handleToggleReaction(msg.id, rx.emoji)}
-                          title={`${rx.users.join(", ")} reacted with ${rx.emoji}`}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
-                            rx.hasReacted
-                              ? "bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm"
-                              : "bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600"
-                          }`}
-                        >
-                          <span>{rx.emoji}</span>
-                          <span className="text-[11px] font-bold">{rx.count}</span>
-                        </button>
-                      ))}
-
-                      <button
-                        onClick={() =>
-                          setActiveReactionMessageId(
-                            activeReactionMessageId === msg.id ? null : msg.id
-                          )
-                        }
-                        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-800/60 border border-slate-700/60 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 text-xs transition cursor-pointer"
-                        title="Add reaction"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -542,6 +712,49 @@ export default function ChatChannel({
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* WhatsApp-Style Quoted Reply Preview Banner above input */}
+      {replyingTo && (
+        <div className="mx-4 px-3.5 py-2.5 bg-slate-900 border-l-4 border-amber-500 border-t border-r border-slate-800 rounded-t-2xl flex items-center justify-between shadow-lg">
+          <div className="space-y-0.5 min-w-0 pr-2">
+            <div className="flex items-center gap-1 text-xs font-bold text-amber-400">
+              <Reply className="w-3 h-3" />
+              <span>Replying to {replyingTo.senderName}</span>
+            </div>
+            <p className="text-[11px] text-slate-300 truncate max-w-md">
+              {replyingTo.content}
+            </p>
+          </div>
+          <button
+            onClick={() => setReplyingTo(null)}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* @ Mention Autocomplete Suggestions Drawer */}
+      {showMentionSuggestions && filteredMembers.length > 0 && (
+        <div className="mx-4 mb-1 p-2 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl z-30 max-h-48 overflow-y-auto space-y-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1 flex items-center gap-1 border-b border-slate-800">
+            <AtSign className="w-3 h-3 text-amber-400" /> Mention Member
+          </p>
+          {filteredMembers.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => handleSelectMention(m.full_name)}
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-amber-500/10 hover:text-amber-300 text-slate-200 text-xs font-medium transition cursor-pointer text-left"
+            >
+              <div className="w-6 h-6 rounded-full bg-slate-800 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-[10px] shrink-0">
+                {m.full_name.charAt(0).toUpperCase()}
+              </div>
+              <span className="truncate">{m.full_name}</span>
+            </button>
+          ))}
         </div>
       )}
 
@@ -613,10 +826,11 @@ export default function ChatChannel({
           </button>
 
           <input
+            ref={textInputRef}
             type="text"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder={`Message #${channelName.replace("-", " ")}... (supports bold, verses & formatting)`}
+            onChange={handleInputChange}
+            placeholder={`Message #${channelName.replace("-", " ")}... (type @ to mention, tap Reply to quote)`}
             className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition"
           />
 

@@ -9,9 +9,14 @@ interface FormattedMessageContentProps {
 }
 
 /**
- * Enhanced Message Formatter that parses and styles rich text, scripture quotes,
- * bold/italic emphasis, bulleted & numbered lists, and auto-detects links from
- * WhatsApp, Word, Bible apps, and web copy.
+ * Enhanced Message Formatter that parses and styles:
+ * - @mentions with glowing amber badge pills
+ * - Scripture blockquotes (starting with > or ")
+ * - Bulleted lists (- , * , • )
+ * - Numbered lists (1. , 2. )
+ * - Bold (** or __), Italic (* or _), Inline Code (`)
+ * - Clickable URLs
+ * - Multiline line-breaks preserved
  */
 export default function FormattedMessageContent({
   content,
@@ -23,7 +28,7 @@ export default function FormattedMessageContent({
   const lines = content.split("\n");
 
   const renderFormattedLine = (line: string, lineIndex: number) => {
-    // 1. Scripture blockquote (lines starting with > or "...)
+    // 1. Scripture blockquote (lines starting with >)
     if (line.trim().startsWith(">")) {
       const cleanQuote = line.trim().replace(/^>\s*/, "");
       return (
@@ -86,29 +91,29 @@ export default function FormattedMessageContent({
 }
 
 /**
- * Parses bold (** or *), italic (* or _), code (`code`), and clickable URLs
+ * Parses @mentions, bold, italic, code, and URLs
  */
 function parseInlineFormatting(text: string): React.ReactNode[] {
   if (!text) return [];
 
   // Regex matches:
   // 1. URLs: https?://\S+
-  // 2. Bold: \*\*(.*?)\*\* or __(.*?)__
-  // 3. Italic: \*(.*?)\* or _(.*?)_
+  // 2. Mentions: @[a-zA-Z0-9_ -]+ or @\w+
+  // 3. Bold: \*\*(.*?)\*\* or __(.*?)__
   // 4. Inline code: `(.*?)`
-  const regex = /(https?:\/\/[^\s]+)|(\*\*|__)(.*?)\2|(`)(.*?)\4|(\*|_)(.*?)\6/g;
+  // 5. Italic: \*(.*?)\* or _(.*?)_
+  const regex = /(https?:\/\/[^\s]+)|(@[a-zA-Z0-9_.-]+)|(\*\*|__)(.*?)\3|(`)(.*?)\5|(\*|_)(.*?)\7/g;
 
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(text)) !== null) {
-    // Append plain text before match
     if (match.index > lastIndex) {
       elements.push(text.slice(lastIndex, match.index));
     }
 
-    const [fullMatch, url, , boldText, , codeText, , italicText] = match;
+    const [fullMatch, url, mention, , boldText, , codeText, , italicText] = match;
 
     if (url) {
       elements.push(
@@ -122,6 +127,15 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
           <span>{url}</span>
           <ExternalLink className="w-3 h-3 inline-block shrink-0" />
         </a>
+      );
+    } else if (mention) {
+      elements.push(
+        <span
+          key={match.index}
+          className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/40 text-amber-300 font-semibold text-xs shadow-sm hover:border-amber-400 cursor-pointer"
+        >
+          {mention}
+        </span>
       );
     } else if (boldText !== undefined) {
       elements.push(
@@ -149,7 +163,6 @@ function parseInlineFormatting(text: string): React.ReactNode[] {
     lastIndex = match.index + fullMatch.length;
   }
 
-  // Append remaining text
   if (lastIndex < text.length) {
     elements.push(text.slice(lastIndex));
   }
