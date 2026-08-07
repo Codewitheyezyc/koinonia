@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
     const cleanName = name?.trim() || "Guest Believer";
     const uniqueId = crypto.randomBytes(8).toString("hex");
-    const guestEmail = `guest_${uniqueId}@koinonia.guest`;
+    const guestEmail = `guest_${uniqueId}@koinonia-guest.com`;
     const guestPassword = `Guest#${crypto.randomBytes(12).toString("hex")}`;
 
     const supabase = await createClient();
