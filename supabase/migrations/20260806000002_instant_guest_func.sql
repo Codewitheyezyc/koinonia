@@ -1,7 +1,7 @@
 -- ========================================================
--- KOINONIA PATCH: Instant Guest User Generator (Zero Email / Zero Domain)
--- Creates pre-confirmed guest user directly in auth.users
--- so guests can join instantly without magic link, emails, or password prompts
+-- KOINONIA PATCH: Instant Pre-Confirmed Guest User Generator v2
+-- Uses valid @gmail.com domain format + sets is_sso_user = false
+-- Bypasses Supabase email server completely (0 emails sent, 0 rate limits)
 -- ========================================================
 
 CREATE OR REPLACE FUNCTION public.create_instant_guest(p_display_name TEXT)
@@ -18,11 +18,10 @@ BEGIN
     v_clean_name := 'Guest Believer';
   END IF;
 
-  v_email := 'guest_' || replace(v_user_id::text, '-', '') || '@guest.koinonia';
+  v_email := 'koinonia_guest_' || replace(v_user_id::text, '-', '') || '@gmail.com';
   v_password := 'Guest#' || replace(gen_random_uuid()::text, '-', '');
-  v_encrypted_pw := extensions.crypt(v_password, extensions.gen_salt('bf'));
+  v_encrypted_pw := extensions.crypt(v_password, extensions.gen_salt('bf', 10));
 
-  -- Insert pre-confirmed user directly into auth.users (omitting generated confirmed_at column)
   INSERT INTO auth.users (
     id,
     instance_id,
@@ -35,10 +34,11 @@ BEGIN
     raw_user_meta_data,
     created_at,
     updated_at,
-    is_anonymous
+    is_anonymous,
+    is_sso_user
   ) VALUES (
     v_user_id,
-    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000000'::uuid,
     'authenticated',
     'authenticated',
     v_email,
@@ -48,10 +48,10 @@ BEGIN
     jsonb_build_object('full_name', v_clean_name || ' (Guest)', 'is_guest', true),
     NOW(),
     NOW(),
+    false,
     false
   );
 
-  -- Ensure profile exists
   INSERT INTO public.profiles (id, full_name, avatar_url)
   VALUES (v_user_id, v_clean_name || ' (Guest)', NULL)
   ON CONFLICT (id) DO UPDATE SET full_name = EXCLUDED.full_name;
