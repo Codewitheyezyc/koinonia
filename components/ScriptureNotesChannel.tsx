@@ -44,7 +44,14 @@ export default function ScriptureNotesChannel({
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setNotes(data);
+      // Exclude any live call recording archive cards (which belong in the Recordings Library)
+      const cleanNotes = data.filter(
+        (n) =>
+          !n.content.includes("Recorded Prayer Gathering Archive") &&
+          !n.content.includes("Live Meeting Recording Available") &&
+          !n.content.includes("Recorded Gathering Archive")
+      );
+      setNotes(cleanNotes);
     }
     setLoading(false);
   };
