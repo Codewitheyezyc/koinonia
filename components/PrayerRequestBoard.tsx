@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Heart, Plus, CheckCircle2, Sparkles, Loader2, MessageSquare, ShieldAlert, Award } from "lucide-react";
+import { FormattedAuthorName } from "@/components/GuestBadge";
 
 interface PrayerRequest {
   id: string;
@@ -209,9 +210,7 @@ export default function PrayerRequestBoard({ fellowshipId }: { fellowshipId: str
                       <div className="w-6 h-6 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center font-bold text-[10px]">
                         {req.profiles?.full_name?.charAt(0).toUpperCase() || "U"}
                       </div>
-                      <span className="text-xs font-semibold text-slate-300">
-                        {req.profiles?.full_name || "Believer"}
-                      </span>
+                      <FormattedAuthorName name={req.profiles?.full_name} className="text-xs font-semibold text-slate-300" />
                     </div>
 
                     {isAnswered && (

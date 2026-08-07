@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Plus, Hash, BookOpen, Heart, Users, LogOut, User, Sparkles, X, Trash2 } from "lucide-react";
-import CreateFellowshipModal from "./CreateFellowshipModal";
-import DeleteFellowshipModal from "./DeleteFellowshipModal";
+import CreateFellowshipModal from "@/components/CreateFellowshipModal";
+import DeleteFellowshipModal from "@/components/DeleteFellowshipModal";
+import { FormattedAuthorName } from "@/components/GuestBadge";
 import { useMobileSidebar } from "@/lib/context/MobileSidebarContext";
 import { useUnreadNotifications } from "@/lib/context/UnreadNotificationContext";
 
@@ -291,12 +292,12 @@ function DashboardSidebarContent({
         <Link
           href="/dashboard/profile"
           onClick={handleClose}
-          className="flex items-center gap-2 text-xs text-slate-300 hover:text-slate-100 transition truncate"
+          className="flex items-center gap-2 text-xs text-slate-300 hover:text-slate-100 transition truncate min-w-0"
         >
           <div className="w-7 h-7 rounded-full bg-amber-600/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
             {userProfile?.full_name?.charAt(0).toUpperCase() || "U"}
           </div>
-          <span className="font-medium truncate">{userProfile?.full_name || "Believer"}</span>
+          <FormattedAuthorName name={userProfile?.full_name} className="truncate text-xs font-medium" />
         </Link>
 
         <button

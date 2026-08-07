@@ -9,12 +9,22 @@ import {
 import "@livekit/components-styles";
 import { Minimize2, Maximize2, PhoneOff, Disc, Square, Loader2, AlertCircle } from "lucide-react";
 import { useMeeting } from "@/lib/context/MeetingContext";
+import GuestBadge from "@/components/GuestBadge";
+
+const WORSHIP_REACTIONS = [
+  { icon: "🔥", label: "Glory!", color: "text-amber-400" },
+  { icon: "🙌", label: "Hallelujah!", color: "text-emerald-400" },
+  { icon: "🙏", label: "Amen", color: "text-amber-300" },
+  { icon: "❤️", label: "Praise God", color: "text-rose-400" },
+  { icon: "🕊️", label: "Holy Spirit", color: "text-sky-300" },
+  { icon: "👑", label: "King", color: "text-yellow-400" },
+];
 
 export default function FloatingMeetingRoom() {
   const { activeMeeting, isMinimized, isModalOpen, minimizeMeeting, maximizeMeeting, leaveMeeting } = useMeeting();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [floatingReactions, setFloatingReactions] = useState<{ id: number; emoji: string }[]>([]);
+  const [floatingReactions, setFloatingReactions] = useState<{ id: number; emoji: string; xPos: number }[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [egressId, setEgressId] = useState<string | null>(null);
   const [recordingLoading, setRecordingLoading] = useState(false);
@@ -33,10 +43,15 @@ export default function FloatingMeetingRoom() {
 
   if (!activeMeeting) return null;
 
-  const triggerReaction = (emoji: string) => {
+  const triggerReaction = (emojiText: string) => {
     const id = Date.now();
-    setFloatingReactions((prev) => [...prev, { id, emoji }]);
-    setTimeout(() => setFloatingReactions((prev) => prev.filter((r) => r.id !== id)), 2500);
+    const xPos = Math.floor(Math.random() * 60) + 20;
+    setFloatingReactions((prev) => [...prev, { id, emoji: emojiText, xPos }]);
+    setTimeout(() => {
+      if (mountedRef.current) {
+        setFloatingReactions((prev) => prev.filter((r) => r.id !== id));
+      }
+    }, 2800);
   };
 
   const handleToggleRecording = async () => {
@@ -73,7 +88,7 @@ export default function FloatingMeetingRoom() {
   if (isMinimized) {
     return (
       <div className="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col items-end gap-2">
-        <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl shadow-2xl shadow-emerald-950/40 overflow-hidden w-[200px]">
+        <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl shadow-2xl shadow-emerald-950/40 overflow-hidden w-[220px]">
           {/* Mini Header */}
           <div className="px-3 py-2 bg-slate-950 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -99,8 +114,9 @@ export default function FloatingMeetingRoom() {
           </div>
 
           {/* Mini live indicator */}
-          <div className="px-3 py-2 flex items-center gap-2">
-            <span className="text-[10px] font-semibold text-emerald-400">🎙️ Live in Prayer Room</span>
+          <div className="px-3 py-2 flex items-center justify-between gap-2 text-[10px]">
+            <span className="font-semibold text-emerald-400">🎙️ Live Meeting Room</span>
+            <GuestBadge size="xs" />
           </div>
         </div>
       </div>
@@ -115,11 +131,11 @@ export default function FloatingMeetingRoom() {
       <div className="w-full max-w-5xl h-[94vh] sm:h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden shadow-2xl relative">
 
         {/* Header */}
-        <div className="px-4 sm:px-6 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div className="px-4 sm:px-6 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-slate-600"}`} />
             <h3 className="font-serif text-xs sm:text-sm font-bold text-slate-100 truncate">
-              {activeMeeting.fellowshipName} — Prayer Sanctuary
+              {activeMeeting.fellowshipName} — Live Meeting Room
             </h3>
             {isRecording && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-semibold uppercase animate-pulse shrink-0">
@@ -129,12 +145,13 @@ export default function FloatingMeetingRoom() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Reactions */}
+            {/* Worship Reactions Bar */}
             <div className="flex items-center gap-0.5 bg-slate-900 border border-slate-800 px-1 py-1 rounded-xl">
-              {[["🙏", "Amen", "text-amber-400"], ["🙌", "Hallelujah", "text-emerald-400"], ["❤️", "Praying", "text-rose-400"]].map(([icon, label, color]) => (
+              {WORSHIP_REACTIONS.map(({ icon, label, color }) => (
                 <button
-                  key={label as string}
+                  key={label}
                   onClick={() => triggerReaction(`${icon} ${label}`)}
+                  title={label}
                   className={`px-1.5 py-1 rounded hover:bg-slate-800 text-[10px] sm:text-xs font-semibold ${color} transition cursor-pointer`}
                 >
                   {icon}
@@ -179,9 +196,13 @@ export default function FloatingMeetingRoom() {
         </div>
 
         {/* Floating Reactions */}
-        <div className="absolute inset-0 pointer-events-none z-30 flex items-end justify-center pb-24 gap-3 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
           {floatingReactions.map((r) => (
-            <div key={r.id} className="animate-bounce bg-slate-900/90 border border-amber-500/40 text-amber-300 px-4 py-2 rounded-full font-bold text-sm shadow-xl backdrop-blur">
+            <div
+              key={r.id}
+              style={{ left: `${r.xPos}%` }}
+              className="absolute bottom-16 -translate-x-1/2 animate-bounce bg-slate-900/95 border border-amber-500/50 text-amber-300 px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-sm shadow-2xl backdrop-blur-md transition-all duration-1000"
+            >
               {r.emoji}
             </div>
           ))}
@@ -215,7 +236,6 @@ export default function FloatingMeetingRoom() {
               onDisconnected={(reason) => {
                 if (mountedRef.current) {
                   setIsConnected(false);
-                  // Only fully leave if user clicked Leave (reason 0 = CLIENT_INITIATED)
                   if (reason === 0) leaveMeeting();
                 }
               }}
