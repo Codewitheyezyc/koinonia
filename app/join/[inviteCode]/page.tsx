@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   Users, Shield, ArrowRight, Loader2, CheckCircle2,
-  UserCheck, Sparkles, UserPlus, ChevronLeft,
+  UserCheck, Sparkles, UserPlus, ChevronLeft, Video,
 } from "lucide-react";
 
 export default function JoinFellowshipPage({
@@ -44,7 +44,7 @@ export default function JoinFellowshipPage({
           .single();
 
         if (fellowshipError || !data) {
-          setError("Fellowship invite link is invalid or has expired.");
+          setError("Cell invite link is invalid or has expired.");
           return;
         }
         setFellowship(data);
@@ -88,12 +88,12 @@ export default function JoinFellowshipPage({
       }
       router.push(`/dashboard/fellowship/${fellowship.id}`);
     } catch (err: any) {
-      setError(err.message || "Failed to join fellowship.");
+      setError(err.message || "Failed to join Cell.");
       setJoining(false);
     }
   };
 
-  // Handle Instant Guest Join (Zero Email, Zero Password, Zero Domain Redirects)
+  // Handle Instant Guest Join with seamless fallback to Live Call
   const handleInstantGuestJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!guestName.trim() || joining) return;
@@ -101,7 +101,6 @@ export default function JoinFellowshipPage({
     setJoining(true);
 
     try {
-      // 1. Call /api/auth/guest API route to create guest user via GoTrue + confirm email
       const res = await fetch("/api/auth/guest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -113,20 +112,17 @@ export default function JoinFellowshipPage({
         throw new Error(guestData.error || "Failed to create guest account.");
       }
 
-      // 2. Sign in with GoTrue native credentials
       const { error: signInErr } = await supabase.auth.signInWithPassword({
         email: guestData.email,
         password: guestData.password,
       });
 
       if (signInErr) {
-        throw new Error(signInErr.message || "Failed to sign in guest.");
+        throw new Error(signInErr.message);
       }
 
-      // 3. Get current session user ID
       const { data: { user: signedInUser } } = await supabase.auth.getUser();
       if (signedInUser) {
-        // Ensure profile name is set
         await supabase
           .from("profiles")
           .upsert({
@@ -134,7 +130,6 @@ export default function JoinFellowshipPage({
             full_name: `${guestName.trim()} (Guest)`,
           }, { onConflict: "id" });
 
-        // Add guest to fellowship members
         await supabase
           .from("fellowship_members")
           .insert({
@@ -144,12 +139,11 @@ export default function JoinFellowshipPage({
           });
       }
 
-      // 4. Instant redirect into fellowship dashboard
       router.replace(`/dashboard/fellowship/${fellowship.id}`);
     } catch (err: any) {
-      console.error("Instant guest join failed:", err);
-      setGuestError(err.message || "Could not complete guest sign in. Please try again.");
-      setJoining(false);
+      console.warn("Guest DB auth fallback to standalone call room:", err);
+      // Fallback: Redirect guest directly to the Live Call Meeting room for this Cell!
+      router.push(`/meeting/${fellowship.id}`);
     }
   };
 
@@ -197,10 +191,10 @@ export default function JoinFellowshipPage({
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100">
       <div className="w-full max-w-lg space-y-5 bg-slate-900/90 p-6 sm:p-8 rounded-2xl border border-slate-800 backdrop-blur-md shadow-2xl">
 
-        {/* Fellowship Header */}
+        {/* Cell Header */}
         <div className="text-center space-y-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-semibold uppercase tracking-wider">
-            ✉️ Fellowship Invitation
+            ✉️ Cell Invitation
           </span>
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-slate-50">{fellowship.name}</h1>
           <p className="text-xs text-slate-400">
@@ -220,7 +214,7 @@ export default function JoinFellowshipPage({
         <div className="space-y-2">
           {[
             { icon: Users, color: "text-emerald-400", text: "Access shared prayer rooms, study notes, and prayer boards." },
-            { icon: Shield, color: "text-amber-400", text: "Private fellowship channel protected by invitation code." },
+            { icon: Shield, color: "text-amber-400", text: "Private Cell channel protected by invitation code." },
           ].map(({ icon: Icon, color, text }) => (
             <div key={text} className="flex items-start gap-3 p-3 rounded-xl bg-slate-950/40 border border-slate-800 text-xs text-slate-300">
               <Icon className={`w-4 h-4 ${color} shrink-0 mt-0.5`} />
@@ -238,13 +232,13 @@ export default function JoinFellowshipPage({
               className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-950/40 transition cursor-pointer"
             >
               {alreadyMember ? (
-                <><UserCheck className="w-5 h-5" /><span>You're a Member — Open Fellowship</span></>
+                <><UserCheck className="w-5 h-5" /><span>You're a Member — Open Cell</span></>
               ) : (
-                <><CheckCircle2 className="w-5 h-5" /><span>Join Fellowship Now</span></>
+                <><CheckCircle2 className="w-5 h-5" /><span>Join Cell Now</span></>
               )}
             </button>
           ) : showGuestForm ? (
-            /* ── Instant Guest Form ── */
+            /* Instant Guest Form */
             <form onSubmit={handleInstantGuestJoin} className="space-y-3 p-4 rounded-xl bg-slate-950 border border-slate-700">
               <div className="flex items-center gap-2 mb-1">
                 <button
@@ -269,7 +263,7 @@ export default function JoinFellowshipPage({
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition"
                 />
                 <p className="text-[10px] text-slate-500">
-                  No email or password needed. You'll enter the fellowship immediately.
+                  No email or password needed. You'll enter the Cell immediately.
                 </p>
               </div>
 
@@ -283,21 +277,22 @@ export default function JoinFellowshipPage({
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition cursor-pointer disabled:opacity-50"
               >
                 {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                <span>Enter Fellowship Instantly</span>
+                <span>Enter Cell Instantly</span>
               </button>
             </form>
           ) : (
-            /* ── Default Options ── */
+            /* Default Options */
             <>
-              <button
-                onClick={() => setShowGuestForm(true)}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 font-bold text-sm transition cursor-pointer group"
+              {/* Option A: Direct Guest Meeting Call Access (0 DB Auth, 0 Emails, 0 Rate Limits) */}
+              <Link
+                href={`/meeting/${fellowship.id}`}
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-sm transition cursor-pointer group"
               >
-                <UserPlus className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition" />
-                <span>Join Instantly as Guest (No Password / Email)</span>
-              </button>
+                <Video className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition" />
+                <span>Join Live Meeting Call as Guest</span>
+              </Link>
               <p className="text-center text-[10px] text-slate-500">
-                Just enter your display name and join in 1 second.
+                1-tap video call entry. No sign-up required.
               </p>
 
               <div className="flex items-center gap-2">
@@ -306,11 +301,12 @@ export default function JoinFellowshipPage({
                 <div className="flex-1 h-px bg-slate-800" />
               </div>
 
+              {/* Option B: Register / Sign In as Cell Member */}
               <button
-                onClick={() => router.push(`/login?next=/join/${inviteCode}`)}
+                onClick={() => router.push(`/signup?next=/join/${inviteCode}`)}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-sm transition cursor-pointer shadow-lg shadow-amber-950/30"
               >
-                <span>Sign In / Register Full Account</span>
+                <span>Register as Cell Member</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </>
