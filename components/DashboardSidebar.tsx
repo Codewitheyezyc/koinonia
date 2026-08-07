@@ -180,10 +180,10 @@ function DashboardSidebarContent({
         </div>
       </div>
 
-      {/* Fellowship Selector Bar */}
+      {/* Cell Selector Bar */}
       <div className="p-3 border-b border-slate-800/60 bg-slate-900/40">
         <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-1">
-          <span>Your Fellowships ({fellowships.length})</span>
+          <span>Your Cells ({fellowships.length})</span>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="text-amber-400 hover:text-amber-300 font-bold transition cursor-pointer lowercase hover:underline"
@@ -197,7 +197,7 @@ function DashboardSidebarContent({
             className="w-full p-2.5 rounded-lg border border-dashed border-slate-800 text-xs text-slate-400 hover:text-amber-400 hover:border-amber-500/50 flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            Create First Fellowship
+            Create First Cell
           </button>
         ) : (
           <div className="space-y-1 max-h-44 overflow-y-auto pr-1">

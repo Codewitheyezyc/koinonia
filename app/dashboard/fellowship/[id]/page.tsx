@@ -94,7 +94,7 @@ export default function FellowshipDashboardPage({
           className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-950/30 transition cursor-pointer"
         >
           <Video className="w-4 h-4 shrink-0" />
-          <span>Gather &amp; Pray</span>
+          <span>Start Live Meeting</span>
         </button>
       </div>
 

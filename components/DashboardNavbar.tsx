@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Copy, Check, BookOpen, User, Plus, Trash2 } from "lucide-react";
+import { Copy, Check, BookOpen, User, Plus, Trash2, Video, Share2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import CreateFellowshipModal from "./CreateFellowshipModal";
 import DeleteFellowshipModal from "./DeleteFellowshipModal";
@@ -18,12 +18,13 @@ interface DashboardNavbarProps {
 
 export default function DashboardNavbar({
   fellowshipId,
-  fellowshipName = "Fellowship Gathering",
+  fellowshipName = "Cell Ministry",
   channelName = "general-chat",
   inviteCode,
   onOpenBible,
 }: DashboardNavbarProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+  const [copiedMeeting, setCopiedMeeting] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isHost, setIsHost] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -46,7 +47,6 @@ export default function DashboardNavbar({
       setUserProfile(profile || { full_name: user.email?.split("@")[0] });
 
       if (fellowshipId) {
-        // Check if user is host or creator
         const { data: fData } = await supabase
           .from("fellowships")
           .select("created_by")
@@ -69,12 +69,20 @@ export default function DashboardNavbar({
     loadUserAndPermissions();
   }, [fellowshipId, supabase]);
 
-  const copyInvite = () => {
+  const copyCellInvite = () => {
     if (!inviteCode) return;
     const link = `${window.location.origin}/join/${inviteCode}`;
     navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 2000);
+  };
+
+  const copyMeetingLink = () => {
+    if (!fellowshipId) return;
+    const link = `${window.location.origin}/meeting/${fellowshipId}`;
+    navigator.clipboard.writeText(link);
+    setCopiedMeeting(true);
+    setTimeout(() => setCopiedMeeting(false), 2000);
   };
 
   const handleFellowshipCreated = (newId: string) => {
@@ -102,26 +110,38 @@ export default function DashboardNavbar({
         </div>
 
         {/* Header Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Create New Fellowship Button */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Create New Cell Button */}
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            title="Create New Fellowship"
+            title="Create New Cell"
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold transition cursor-pointer"
           >
-            <Plus className="w-4 h-4 shrink-0 text-amber-400" />
-            <span className="hidden sm:inline">New Fellowship</span>
+            <Plus className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+            <span className="hidden sm:inline">New Cell</span>
           </button>
 
-          {/* Delete Fellowship Button (Host/Creator only) */}
+          {/* Copy Live Meeting Link */}
+          {fellowshipId && (
+            <button
+              onClick={copyMeetingLink}
+              title="Copy Live Meeting Link for Guests"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-xs font-semibold transition cursor-pointer"
+            >
+              {copiedMeeting ? <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> : <Video className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+              <span className="hidden md:inline">{copiedMeeting ? "Meeting Link Copied" : "Copy Call Link"}</span>
+            </button>
+          )}
+
+          {/* Delete Cell Button (Host/Creator only) */}
           {isHost && fellowshipId && (
             <button
               onClick={() => setIsDeleteModalOpen(true)}
-              title="Delete Fellowship"
+              title="Delete Cell"
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition cursor-pointer"
             >
-              <Trash2 className="w-4 h-4 text-rose-400 shrink-0" />
-              <span className="hidden md:inline">Delete</span>
+              <Trash2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <span className="hidden lg:inline">Delete</span>
             </button>
           )}
 
@@ -131,19 +151,19 @@ export default function DashboardNavbar({
               title="Parallel Scripture Reader"
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 hover:border-amber-500/40 text-xs font-medium transition cursor-pointer"
             >
-              <BookOpen className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="hidden sm:inline">Bible Reader</span>
+              <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="hidden lg:inline">Bible Reader</span>
             </button>
           )}
 
           {inviteCode && (
             <button
-              onClick={copyInvite}
-              title="Copy Invite Link"
+              onClick={copyCellInvite}
+              title="Copy Cell Invite Link"
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 hover:border-amber-500/40 text-xs font-medium transition cursor-pointer"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400 shrink-0" /> : <Copy className="w-4 h-4 shrink-0" />}
-              <span className="hidden sm:inline">{copied ? "Invite Copied" : "Copy Invite"}</span>
+              {copiedInvite ? <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> : <Share2 className="w-3.5 h-3.5 shrink-0" />}
+              <span className="hidden lg:inline">{copiedInvite ? "Invite Copied" : "Cell Invite"}</span>
             </button>
           )}
 

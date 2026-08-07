@@ -33,7 +33,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("You must be logged in to create a fellowship.");
+      if (!user) throw new Error("You must be logged in to create a Cell.");
 
       const { data, error: insertError } = await supabase
         .from("fellowships")
@@ -55,7 +55,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
         onCreated(data.id);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to create fellowship.");
+      setError(err.message || "Failed to create Cell.");
     } finally {
       setLoading(false);
     }
@@ -94,8 +94,8 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
         {!createdInviteCode ? (
           <>
             <div className="space-y-1">
-              <h3 className="font-serif text-xl font-bold text-slate-100">Create New Fellowship</h3>
-              <p className="text-xs text-slate-400">Launch a dedicated space for your prayer group or Bible study.</p>
+              <h3 className="font-serif text-xl font-bold text-slate-100">Create New Cell</h3>
+              <p className="text-xs text-slate-400">Launch a dedicated Cell space for your meetings & Rhapsody study.</p>
             </div>
 
             {error && (
@@ -106,13 +106,13 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Fellowship Name</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Cell Name</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Morning Prayer Watch"
+                  placeholder="e.g. Royalties Cell 1, Grace Cell"
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition"
                 />
               </div>
@@ -123,7 +123,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. Gathering every Tuesday at 7 PM for intercession and scripture study."
+                  placeholder="e.g. Gathering every week for Rhapsody study, prayer, and soul winning."
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition resize-none"
                 />
               </div>
@@ -158,8 +158,8 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
                   >
                     <Lock className="w-4 h-4 shrink-0" />
                     <div>
-                      <div className="font-semibold">Private Group</div>
-                      <div className="text-[10px] text-slate-400 font-normal">Host approval required</div>
+                      <div className="font-semibold">Private Cell</div>
+                      <div className="text-[10px] text-slate-400 font-normal">Leader approval required</div>
                     </div>
                   </button>
                 </div>
@@ -170,7 +170,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
                 disabled={loading}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-semibold text-sm transition disabled:opacity-50 cursor-pointer"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Launch Fellowship"}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Launch Cell"}
               </button>
             </form>
           </>
@@ -181,8 +181,8 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
             </div>
 
             <div className="space-y-1">
-              <h3 className="font-serif text-xl font-bold text-slate-100">Fellowship Created!</h3>
-              <p className="text-xs text-slate-400">Share your unique invite link with members to gather.</p>
+              <h3 className="font-serif text-xl font-bold text-slate-100">Cell Created!</h3>
+              <p className="text-xs text-slate-400">Share your unique invite link with brethren to gather.</p>
             </div>
 
             <div className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
@@ -202,7 +202,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
               onClick={handleFinish}
               className="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition"
             >
-              Go to Fellowship Dashboard
+              Go to Cell Sanctuary
             </button>
           </div>
         )}

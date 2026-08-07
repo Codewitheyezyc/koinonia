@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Users, Plus, Heart, Sparkles, Loader2 } from "lucide-react";
+import { Users, Plus, Loader2 } from "lucide-react";
 import CreateFellowshipModal from "@/components/CreateFellowshipModal";
 import DashboardNavbar from "@/components/DashboardNavbar";
 
@@ -23,7 +23,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // Fetch profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -31,7 +30,6 @@ export default function DashboardPage() {
         .single();
       setUserProfile(profile || { full_name: user.email?.split("@")[0] });
 
-      // Check if user has any fellowship membership
       const { data: memberships } = await supabase
         .from("fellowship_members")
         .select("fellowship_id")
@@ -59,7 +57,7 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardNavbar
-        fellowshipName="Koinonia Fellowship Hub"
+        fellowshipName="Cell Ministry Hub"
         channelName="welcome"
       />
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center space-y-6 bg-slate-900/20">
@@ -73,7 +71,7 @@ export default function DashboardPage() {
           </h2>
 
           <p className="text-xs text-slate-400 leading-relaxed">
-            You are currently not part of any fellowship space. Launch your own prayer group or ask a host to send you their unique invite link.
+            You are currently not part of any Cell space. Launch your own Cell or ask your Cell Leader to send you their unique invite link.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -82,7 +80,7 @@ export default function DashboardPage() {
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-semibold text-xs transition shadow-lg shadow-amber-950/30 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              Launch New Fellowship
+              Launch New Cell
             </button>
           </div>
         </div>

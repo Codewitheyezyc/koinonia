@@ -48,8 +48,8 @@ export default function DeleteFellowshipModal({
         router.refresh();
       }
     } catch (err: any) {
-      console.error("Delete fellowship error:", err);
-      setError(err.message || "Failed to delete fellowship. Make sure you are the host.");
+      console.error("Delete cell error:", err);
+      setError(err.message || "Failed to delete Cell. Make sure you are the leader.");
       setLoading(false);
     }
   };
@@ -69,7 +69,7 @@ export default function DeleteFellowshipModal({
             <Trash2 className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-serif text-lg font-bold text-slate-100">Delete Fellowship</h3>
+            <h3 className="font-serif text-lg font-bold text-slate-100">Delete Cell</h3>
             <p className="text-xs text-rose-400 font-semibold">{fellowshipName}</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function DeleteFellowshipModal({
             <span>Warning: Permanent Action</span>
           </div>
           <p className="text-slate-400 leading-relaxed">
-            Deleting this fellowship will permanently remove all associated chat messages, prayer request boards, study notes, and member access. This cannot be undone.
+            Deleting this Cell will permanently remove all associated chat messages, prayer boards, Rhapsody study notes, and member access.
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export default function DeleteFellowshipModal({
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-lg shadow-rose-950/50 cursor-pointer disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            <span>Delete Fellowship</span>
+            <span>Delete Cell</span>
           </button>
         </div>
       </div>

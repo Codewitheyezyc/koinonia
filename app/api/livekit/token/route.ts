@@ -1,52 +1,60 @@
 import { createClient } from "@/lib/supabase/server";
 import { AccessToken } from "livekit-server-sdk";
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
+    const { fellowshipId, cellId, guestName } = await request.json();
+    const targetCellId = cellId || fellowshipId;
+
+    if (!targetCellId) {
+      return NextResponse.json({ error: "Cell ID is required" }, { status: 400 });
+    }
+
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    let identity: string;
+    let name: string;
+    let isHost = false;
+
+    if (user) {
+      // Authenticated Believer
+      const { data: member } = await supabase
+        .from("fellowship_members")
+        .select("role")
+        .eq("fellowship_id", targetCellId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const { data: cell } = await supabase
+        .from("fellowships")
+        .select("created_by")
+        .eq("id", targetCellId)
+        .single();
+
+      isHost = member?.role === "host" || cell?.created_by === user.id;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+      identity = user.id;
+      name = profile?.full_name || user.email?.split("@")[0] || "Believer";
+    } else if (guestName) {
+      // Unauthenticated Guest joining live call via meeting link
+      const cleanGuestName = guestName.trim() || "Guest Believer";
+      identity = `guest-${crypto.randomBytes(6).toString("hex")}`;
+      name = cleanGuestName.endsWith("(Guest)") ? cleanGuestName : `${cleanGuestName} (Guest)`;
+      isHost = false;
+    } else {
+      return NextResponse.json({ error: "Unauthorized: Sign in or provide guest name" }, { status: 401 });
     }
 
-    const { fellowshipId } = await request.json();
-    if (!fellowshipId) {
-      return NextResponse.json({ error: "Fellowship ID is required" }, { status: 400 });
-    }
-
-    // Verify user is a member or creator of the fellowship
-    const { data: member } = await supabase
-      .from("fellowship_members")
-      .select("role")
-      .eq("fellowship_id", fellowshipId)
-      .eq("user_id", user.id)
-      .single();
-
-    if (!member) {
-      return NextResponse.json({ error: "Forbidden: You are not a member of this fellowship" }, { status: 403 });
-    }
-
-    const { data: fellowship } = await supabase
-      .from("fellowships")
-      .select("created_by")
-      .eq("id", fellowshipId)
-      .single();
-
-    const isHost = member.role === "host" || fellowship?.created_by === user.id;
-
-    // Fetch user profile for room display name
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
-
-    const identity = user.id;
-    const name = profile?.full_name || user.email?.split("@")[0] || "Believer";
-    const roomName = `koinonia-room-${fellowshipId}`;
-
+    const roomName = `koinonia-room-${targetCellId}`;
     const apiKey = process.env.LIVEKIT_API_KEY || "devkey";
     const apiSecret = process.env.LIVEKIT_API_SECRET || "secret";
 
@@ -69,7 +77,7 @@ export async function POST(request: Request) {
     const token = await at.toJwt();
     const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || "wss://demo.livekit.cloud";
 
-    return NextResponse.json({ token, wsUrl, roomName, isHost });
+    return NextResponse.json({ token, wsUrl, roomName, isHost, participantName: name });
   } catch (err: any) {
     console.error("Error issuing LiveKit token:", err);
     return NextResponse.json({ error: err.message || "Server error generating room token" }, { status: 500 });
