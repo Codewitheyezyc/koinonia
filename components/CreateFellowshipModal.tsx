@@ -123,7 +123,7 @@ export default function CreateFellowshipModal({ isOpen, onClose, onCreated }: Cr
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. Gathering every week for Rhapsody study, prayer, and soul winning."
+                  placeholder="e.g. Gathering every week for word study, prayer, and fellowship."
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition resize-none"
                 />
               </div>

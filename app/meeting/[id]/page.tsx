@@ -174,7 +174,7 @@ export default function StandaloneMeetingPage({
               Thank You for Joining Us!
             </h2>
             <p className="text-xs text-slate-400 leading-relaxed">
-              You just participated in <span className="text-slate-200 font-semibold">{cell.name}</span> Live Meeting. Become an official member of this Cell to access shared Rhapsody study notes, prayer boards, and cell chat!
+              You just participated in <span className="text-slate-200 font-semibold">{cell.name}</span> Live Meeting. Become an official member of this Cell to access shared scripture study notes, prayer boards, and cell chat!
             </p>
           </div>
 
@@ -185,7 +185,7 @@ export default function StandaloneMeetingPage({
             </div>
             <ul className="space-y-1 text-slate-400 pl-6 list-disc">
               <li>Access to Cell Prayer Boards & Intercessions</li>
-              <li>Rhapsody of Realities & Bible Study Notes</li>
+              <li>Daily Word & Bible Study Notes</li>
               <li>24/7 Cell Chat & Community Channels</li>
             </ul>
           </div>

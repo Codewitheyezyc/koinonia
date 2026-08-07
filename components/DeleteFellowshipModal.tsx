@@ -80,7 +80,7 @@ export default function DeleteFellowshipModal({
             <span>Warning: Permanent Action</span>
           </div>
           <p className="text-slate-400 leading-relaxed">
-            Deleting this Cell will permanently remove all associated chat messages, prayer boards, Rhapsody study notes, and member access.
+            Deleting this Cell will permanently remove all associated chat messages, prayer boards, scripture study notes, and member access.
           </p>
         </div>
 
