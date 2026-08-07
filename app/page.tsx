@@ -40,7 +40,7 @@ export default function Home() {
             How It Works
           </a>
           <a href="#features" className="hover:text-amber-400 transition">
-            Features
+            Cell Features
           </a>
           <a href="#faq" className="hover:text-amber-400 transition">
             FAQ
@@ -50,15 +50,15 @@ export default function Home() {
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <Link
             href="/login"
-            className="text-xs font-semibold text-slate-300 hover:text-amber-400 transition px-2 py-1 rounded-lg hover:bg-slate-900"
+            className="text-xs font-semibold text-slate-300 hover:text-amber-400 transition px-2.5 py-1.5 rounded-lg hover:bg-slate-900"
           >
             Sign In
           </Link>
           <Link
             href="/signup"
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-semibold text-xs shadow-lg shadow-amber-950/30 transition cursor-pointer whitespace-nowrap"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-950/30 transition cursor-pointer whitespace-nowrap"
           >
-            <span>Gather Now</span>
+            <span>Launch Cell</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -70,15 +70,15 @@ export default function Home() {
 
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5" />
-          The Digital Christian Sanctuary
+          Digital Cell Sanctuary & Christian Community
         </div>
 
         <h1 className="font-serif text-4xl sm:text-7xl font-bold tracking-tight text-slate-50 leading-[1.1] max-w-4xl">
-          Gathering believers in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600">Prayer, Scripture & Fellowship</span>
+          Empowering Believers in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600">Word, Prayer & Cell Ministry</span>
         </h1>
 
         <p className="text-base sm:text-xl text-slate-300 font-light max-w-2xl leading-relaxed">
-          Koinonia replaces noisy social channels and corporate meeting tools with a quiet, peaceful space built specifically for prayer groups, family devotions, and Bible studies.
+          Koinonia provides a quiet, dedicated digital space built specifically for Cell groups, weekly meetings, scripture study notes, and live video prayer gatherings.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
@@ -86,7 +86,7 @@ export default function Home() {
             href="/signup"
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-950/40 transition cursor-pointer"
           >
-            Create Your Fellowship Space
+            Launch Your Cell Space
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
@@ -94,23 +94,23 @@ export default function Home() {
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:text-amber-400 hover:border-amber-500/40 font-semibold text-sm transition"
           >
             <Smartphone className="w-4 h-4 text-amber-500" />
-            Add to Phone / Desktop
+            Enter Cell Hub
           </Link>
         </div>
 
         {/* Badges */}
         <div className="pt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-medium text-slate-400 border-t border-slate-800/80 w-full max-w-3xl">
           <div className="flex items-center justify-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-amber-500" /> No Ads or Likes
+            <CheckCircle2 className="w-4 h-4 text-amber-500" /> 1-Click Guest Meeting Links
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-amber-500" /> 100% Private & Safe
+            <CheckCircle2 className="w-4 h-4 text-amber-500" /> 100% Private Cell Groups
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-amber-500" /> Clear Voice & Video
+            <CheckCircle2 className="w-4 h-4 text-amber-500" /> HD Live Cell Meetings
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4 text-amber-500" /> 1-Click Instant Invites
+            <CheckCircle2 className="w-4 h-4 text-amber-500" /> Parallel Scripture Reader
           </div>
         </div>
       </section>
@@ -120,13 +120,13 @@ export default function Home() {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest">
-              The Koinonia Sanctuary Way
+              The Kingdom Cell Model
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-100">
-              Technology Built Purposefully for Fellowship
+              Technology Purpose-Built for Kingdom Cells
             </h2>
             <p className="text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              Believers were created to gather, encourage one another, and pray together. Koinonia provides a quiet, reverent space designed from the ground up for Christian community.
+              Believers grow best when connected in active Cell groups. Koinonia gives leaders and brethren the exact tools needed to study the Word, pray in unity, and build strong Christian fellowship.
             </p>
           </div>
 
@@ -135,9 +135,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
                 ✓
               </div>
-              <h3 className="font-serif text-base font-bold text-slate-100">Uninterrupted Gathering</h3>
+              <h3 className="font-serif text-base font-bold text-slate-100">Live Cell Meetings</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Gather freely for morning devotions, midnight prayer watches, or Bible studies without call time limits or abrupt cutoffs.
+                Gather for weekly Cell meetings or prayer watches with high-definition voice and video calls, recording options, and worship confessions.
               </p>
             </div>
 
@@ -145,9 +145,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
                 ✓
               </div>
-              <h3 className="font-serif text-base font-bold text-slate-100">Active Intercession</h3>
+              <h3 className="font-serif text-base font-bold text-slate-100">Active Cell Intercession</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Post prayer needs and know your group is supporting you. Members tap <em>&quot;I Prayed for This&quot;</em> to give real-time encouragement.
+                Share prayer needs on your Cell board. Members tap <em>&quot;I Prayed for This&quot;</em> for real-time spiritual encouragement and testimonies.
               </p>
             </div>
 
@@ -155,9 +155,9 @@ export default function Home() {
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
                 ✓
               </div>
-              <h3 className="font-serif text-base font-bold text-slate-100">100% Private & Sacred</h3>
+              <h3 className="font-serif text-base font-bold text-slate-100">Daily Word & Study Notes</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Your prayer requests and fellowship discussions are sacred data. They stay strictly private inside your group—never sold, indexed, or shown ads.
+                Pin scripture passages, sermon points, and study notes directly to your Cell channel so members remain fed in the Word all week long.
               </p>
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function Home() {
               How Koinonia Works
             </h2>
             <p className="text-sm text-slate-400 max-w-xl mx-auto">
-              Gathering your church small group, family devotion, or prayer circle takes less than 1 minute.
+              Setting up your Cell space or inviting guest participants takes less than 1 minute.
             </p>
           </div>
 
@@ -184,9 +184,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-full bg-amber-600 text-slate-950 font-serif font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-amber-950/30">
                 1
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Create a Fellowship</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Launch Your Cell Space</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Give your group a name (e.g. <em>Morning Intercession</em> or <em>Family Bible Study</em>). Your space is created instantly.
+                Name your Cell (e.g., <em>Royalties Cell 1</em> or <em>Grace Prayer Cell</em>). Your private sanctuary is created instantly.
               </p>
             </div>
 
@@ -194,9 +194,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-full bg-amber-600 text-slate-950 font-serif font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-amber-950/30">
                 2
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Share Your Invite Link</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Invite Brethren or Guests</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Send your unique invite link directly on WhatsApp or SMS. Members tap once to join without confusing app store setups.
+                Share a 1-click **Cell Invite Link** for permanent members or a **Meeting Link** for live call guest participants.
               </p>
             </div>
 
@@ -204,9 +204,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-full bg-amber-600 text-slate-950 font-serif font-bold text-lg flex items-center justify-center mx-auto shadow-lg shadow-amber-950/30">
                 3
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Pray & Study Together</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Gather & Study Together</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Tap <strong>Gather & Pray</strong> for crystal-clear voice calls, track answered prayers, and pin Bible study notes.
+                Click <strong>Start Live Meeting</strong> for crystal-clear video calls, track prayer testimonies, and study parallel Scriptures together.
               </p>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function Home() {
               Features Built for Believers
             </h2>
             <p className="text-xs text-slate-400 max-w-xl mx-auto">
-              Every tool is simple, intuitive, and designed to foster authentic spiritual fellowship.
+              Every tool is simple, intuitive, and designed to foster authentic spiritual growth and Cell unity.
             </p>
           </div>
 
@@ -230,9 +230,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
                 <Video className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Live Voice & Video Prayer</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Live Video Cell Meetings</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Clear prayer rooms with faith-based worship reactions (Amen, Praying Hands) and high-definition screen sharing for Bible studies.
+                HD video prayer rooms with kingdom worship confessions (Glory!, Hallelujah!, Amen), call recording, and screen sharing.
               </p>
             </div>
 
@@ -240,9 +240,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
                 <Heart className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Interactive Prayer Board</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Cell Prayer Request Board</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Post prayer requests and track answers. Tapping &quot;I Prayed for This&quot; notifies authors in real time, transforming prayer into shared action.
+                Post prayer needs and track answered prayers. Tapping &quot;I Prayed for This&quot; notifies brethren in real time.
               </p>
             </div>
 
@@ -250,9 +250,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-slate-100">Scripture & Study Notes</h3>
+              <h3 className="font-serif text-lg font-bold text-slate-100">Daily Word & Scripture Notes</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Dedicated spaces to share Bible passages, sermon outlines, and study notes so your fellowship stays connected all week long.
+                Dedicated spaces to pin Bible passages, sermon outlines, and study notes so your Cell stays fed in the Word.
               </p>
             </div>
           </div>
@@ -275,40 +275,40 @@ export default function Home() {
             <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
               <h3 className="font-serif text-base font-semibold text-slate-100 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                Is Koinonia free to use?
+                Is Koinonia free to use for Cell groups?
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed pl-6">
-                Yes! Koinonia is free for everyday believers, family devotions, and small prayer groups. You get unlimited prayer request tracking, scripture notes, and live voice/video calls for up to 15 concurrent participants per meeting.
+                Yes! Koinonia is free for believers, Cell Leaders, and prayer groups. You get unlimited prayer request tracking, scripture study notes, and live video cell meetings.
               </p>
             </div>
 
             <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
               <h3 className="font-serif text-base font-semibold text-slate-100 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                Are my prayer requests private and safe?
+                How do guest call links work for live meetings?
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed pl-6">
-                Absolutly. Every fellowship group is strictly private and secured under database Row-Level Security. Only members who have joined your group can view your prayer requests. Data is never sold, indexed on search engines, or mined for ads.
+                Cell Leaders can copy a standalone **Live Meeting Link**. Anyone clicking it can type their name and join the video call instantly as a guest without creating an account. When the call ends, guests get an invitation card to register and join the Cell permanently!
               </p>
             </div>
 
             <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
               <h3 className="font-serif text-base font-semibold text-slate-100 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                Do my group members need to download a heavy app?
+                Are my Cell requests and study notes private?
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed pl-6">
-                No! Koinonia works progressive-first in any web browser on iPhone, Android, tablet, or desktop. Members can join in 1 tap from an invite link, or save it directly to their phone&apos;s home screen.
+                Absolutely. Every Cell group is strictly private and protected under database Row-Level Security. Only registered members of your Cell can view its study notes, prayer boards, and chat.
               </p>
             </div>
 
             <div className="p-6 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
               <h3 className="font-serif text-base font-semibold text-slate-100 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                Can older or non-tech-savvy members use Koinonia easily?
+                Do members need to download an app?
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed pl-6">
-                Yes. We designed the interface to be clean, calm, and zero-friction. Joining a prayer meeting or checking the Prayer Request Board takes just 1 or 2 taps without confusing technical settings.
+                No! Koinonia works progressive-first in any web browser on iPhone, Android, tablet, or desktop. Members can join in 1 tap from an invite link, or save it to their phone&apos;s home screen.
               </p>
             </div>
           </div>
@@ -326,7 +326,7 @@ export default function Home() {
               </h2>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
-              A dedicated, sacred digital sanctuary for Christian gathering, real-time prayer rooms, and authentic intercession worldwide.
+              A dedicated digital sanctuary for Christian Cell ministry, live prayer rooms, and authentic kingdom fellowship worldwide.
             </p>
             <div className="text-[11px] text-amber-400/90 font-medium">
               ✝ Dedicated to the Global Body of Christ
@@ -351,7 +351,7 @@ export default function Home() {
               </li>
               <li>
                 <a href="#features" className="hover:text-amber-400 transition">
-                  Platform Features
+                  Cell Features
                 </a>
               </li>
               <li>
@@ -365,20 +365,20 @@ export default function Home() {
           {/* Column 3: Platform Features */}
           <div className="space-y-3">
             <h4 className="font-serif font-bold text-slate-200 uppercase tracking-wider text-xs">
-              Fellowship Features
+              Cell Features
             </h4>
             <ul className="space-y-2 text-xs text-slate-400">
               <li className="flex items-center gap-1.5">
-                <Video className="w-3.5 h-3.5 text-amber-500" /> Audio/Video Prayer Rooms
+                <Video className="w-3.5 h-3.5 text-amber-500" /> Live Cell Video Meetings
               </li>
               <li className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 text-rose-500" /> Prayer Request Board
+                <Heart className="w-3.5 h-3.5 text-rose-500" /> Cell Prayer Request Board
               </li>
               <li className="flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-emerald-500" /> Scripture Study Notes
+                <BookOpen className="w-3.5 h-3.5 text-emerald-500" /> Daily Word & Scripture Notes
               </li>
               <li className="flex items-center gap-1.5">
-                <Share2 className="w-3.5 h-3.5 text-amber-500" /> 1-Click Shareable Invites
+                <Share2 className="w-3.5 h-3.5 text-amber-500" /> 1-Click Guest Meeting Links
               </li>
             </ul>
           </div>
@@ -386,7 +386,7 @@ export default function Home() {
           {/* Column 4: Privacy & Account */}
           <div className="space-y-3">
             <h4 className="font-serif font-bold text-slate-200 uppercase tracking-wider text-xs">
-              Account & Privacy
+              Account & Cell Access
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
@@ -396,7 +396,7 @@ export default function Home() {
               </li>
               <li>
                 <Link href="/signup" className="hover:text-amber-400 transition">
-                  Create New Fellowship
+                  Launch New Cell
                 </Link>
               </li>
               <li className="flex items-center gap-1.5 text-emerald-400 pt-1">
