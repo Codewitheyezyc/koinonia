@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { BookOpen, Plus, Sparkles, Loader2, Bookmark, Share2 } from "lucide-react";
+import { BookOpen, Plus, Sparkles, Loader2, Bookmark } from "lucide-react";
+import { FormattedAuthorName } from "@/components/GuestBadge";
+import FormattedMessageContent from "@/components/FormattedMessageContent";
 
 interface Note {
   id: string;
@@ -64,11 +66,10 @@ export default function ScriptureNotesChannel({
       });
 
       if (error) throw error;
-
       setInputText("");
       loadNotes();
     } catch (err: any) {
-      console.error("Failed to post note:", err);
+      console.error("Failed to post scripture note:", err);
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +85,7 @@ export default function ScriptureNotesChannel({
             <span>Bible Study & Scripture Notes</span>
           </h2>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Share study outlines, key verse insights, and meeting summaries with your fellowship.
+            Share study outlines, key verse insights, reflections, and meeting sermon notes with your fellowship.
           </p>
         </div>
 
@@ -94,36 +95,44 @@ export default function ScriptureNotesChannel({
             <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
           </div>
         ) : notes.length === 0 ? (
-          <div className="p-8 sm:p-12 text-center border border-dashed border-slate-800 rounded-2xl space-y-2 text-slate-500">
-            <Bookmark className="w-8 h-8 text-emerald-500/40 mx-auto" />
-            <h3 className="font-serif text-sm font-semibold text-slate-400">No Study Notes Pinned</h3>
-            <p className="text-xs max-w-sm mx-auto">
-              Post your first scripture study note or sermon outline below.
-            </p>
+          <div className="p-8 sm:p-12 text-center border border-dashed border-slate-800 rounded-3xl space-y-3 text-slate-500 bg-slate-950/40">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+              <Bookmark className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-serif text-sm font-semibold text-slate-300">No Study Notes Pinned Yet</h3>
+              <p className="text-xs max-w-sm mx-auto text-slate-400">
+                Post your first scripture study note, sermon outline, or group reflection below.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
             {notes.map((note) => (
               <div
                 key={note.id}
-                className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 shadow-md"
+                className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800/90 space-y-3 shadow-md hover:border-slate-700/80 transition"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center font-bold text-[10px]">
+                    <div className="w-7 h-7 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center font-bold text-[10px]">
                       {note.profiles?.full_name?.charAt(0).toUpperCase() || "U"}
                     </div>
-                    <span className="text-xs font-semibold text-slate-300">
-                      {note.profiles?.full_name || "Believer"}
-                    </span>
+                    <FormattedAuthorName
+                      name={note.profiles?.full_name}
+                      className="text-xs font-semibold text-slate-300"
+                    />
                   </div>
                   <span className="text-[10px] text-slate-500 font-mono">
                     {new Date(note.created_at).toLocaleDateString()}
                   </span>
                 </div>
 
-                <div className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-wrap">
-                  {note.content}
+                <div className="pt-1 border-t border-slate-800/60">
+                  <FormattedMessageContent
+                    content={note.content}
+                    className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-wrap break-words"
+                  />
                 </div>
               </div>
             ))}
@@ -138,14 +147,14 @@ export default function ScriptureNotesChannel({
             rows={2}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Share a scripture passage, reflection, or meeting note..."
+            placeholder="Share a scripture passage, reflection, or meeting note (supports markdown & verses)..."
             className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80 transition resize-none"
           />
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={!inputText.trim() || submitting}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition disabled:opacity-40 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs transition disabled:opacity-40 cursor-pointer shadow-md"
             >
               {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               <span>Post Study Note</span>
