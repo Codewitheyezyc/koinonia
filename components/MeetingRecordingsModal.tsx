@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  X, Video, Download, Play, Pause, Loader2, Sparkles,
-  Calendar, Clock, Trash2, ExternalLink, HardDrive, CheckCircle2
+  X, Video, Download, Play, Pause, Loader2,
+  Calendar, Trash2, ExternalLink, HardDrive, CheckCircle2
 } from "lucide-react";
 import { FormattedAuthorName } from "@/components/GuestBadge";
 
@@ -127,37 +127,37 @@ export default function MeetingRecordingsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-2xl flex flex-col max-h-[90vh] shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
+      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl flex flex-col max-h-[88vh] shadow-2xl overflow-hidden relative">
         
-        {/* Header */}
-        <div className="p-4 sm:p-5 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-md">
+        {/* Header with spacious responsive layout */}
+        <div className="p-4 sm:p-6 bg-slate-950/90 border-b border-slate-800 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 min-w-0 pr-2">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-lg shrink-0 mt-0.5">
               <Video className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="font-serif text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
-                <span>{fellowshipName} — Recordings & Archives</span>
+            <div className="space-y-1 min-w-0">
+              <h2 className="font-serif text-sm sm:text-base font-bold text-slate-100 leading-snug">
+                {fellowshipName} — Recordings & Archives
               </h2>
-              <p className="text-xs text-slate-400">
-                Watch past live meetings and download full video recordings directly to your computer.
+              <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                Watch past live meetings and download video recordings directly to your computer.
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition cursor-pointer shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Active Player (if user clicked play) */}
         {activePlaybackUrl && (
           <div className="p-4 bg-slate-950 border-b border-slate-800">
-            <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-black aspect-video max-h-64 mx-auto flex items-center justify-center">
+            <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-black aspect-video max-h-64 mx-auto flex items-center justify-center shadow-inner">
               <video
                 src={activePlaybackUrl}
                 controls
@@ -168,7 +168,7 @@ export default function MeetingRecordingsModal({
           </div>
         )}
 
-        {/* Recordings List */}
+        {/* Recordings List / Empty State */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
@@ -176,14 +176,14 @@ export default function MeetingRecordingsModal({
               <p className="text-xs">Loading recorded gatherings...</p>
             </div>
           ) : recordings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 text-slate-500">
-              <div className="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center text-amber-400">
-                <HardDrive className="w-6 h-6" />
+            <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center space-y-4 px-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-xl shadow-amber-950/20">
+                <HardDrive className="w-7 h-7" />
               </div>
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-300">No Recorded Meetings Yet</p>
-                <p className="text-xs max-w-sm text-slate-500">
-                  When you click <strong>&quot;Record&quot;</strong> during any Live Cell Meeting, the full recording will be stored here and available to download directly to your computer.
+              <div className="space-y-1.5 max-w-sm">
+                <h3 className="font-serif text-base font-bold text-slate-100">No Recorded Meetings Yet</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  When you click <strong className="text-slate-200">&quot;Record&quot;</strong> during any Live Cell Meeting, the full recording will be saved here and available to download directly to your computer.
                 </p>
               </div>
             </div>
@@ -191,7 +191,7 @@ export default function MeetingRecordingsModal({
             recordings.map((rec) => (
               <div
                 key={rec.id}
-                className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
+                className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 hover:border-slate-700/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
               >
                 <div className="space-y-1.5 min-w-0">
                   <div className="flex items-center gap-2">
