@@ -712,7 +712,7 @@ export default function ChatChannel({
   return (
     <div className="flex-1 flex flex-col justify-between h-full bg-slate-900/30 overflow-hidden pb-16 md:pb-0 relative">
       {/* Daily Scripture & Confession Card Widget */}
-      <DailyConfessionWidget onOpenBible={onOpenBible} />
+      <DailyConfessionWidget onOpenBible={onOpenBible} isHost={isHost} />
 
       {/* Pinned Message / Weekly Scripture Focus Banner */}
       {pinnedMessage && (
@@ -879,15 +879,17 @@ export default function ChatChannel({
                         </div>
                       </div>
 
-                      {/* Action Bar (Visible on Hover OR on Touch Tap) */}
+                      {/* Action Bar — Centered right on top of the message bubble */}
                       {!msg.is_deleted && (
                         <div
                           onClick={(e) => e.stopPropagation()}
-                          className={`absolute -top-3.5 ${
-                            isMe ? "left-0 -translate-x-full pl-1.5" : "right-0 translate-x-full pr-1.5"
-                          } ${
-                            isSelected ? "opacity-100 z-20 flex" : "opacity-0 group-hover:opacity-100 hidden sm:flex"
-                          } items-center gap-1 transition-opacity duration-150`}
+                          className={`absolute -top-4 ${
+                            isMe ? "right-2 sm:right-3" : "left-2 sm:left-3"
+                          } z-30 flex items-center gap-1 p-1 bg-slate-900/95 border border-slate-700/90 rounded-full shadow-2xl backdrop-blur-md transition-all duration-150 ${
+                            isSelected
+                              ? "opacity-100 scale-100 flex"
+                              : "opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 hidden sm:flex"
+                          }`}
                         >
                           {/* WhatsApp-style Reply Button */}
                           <button
@@ -902,7 +904,7 @@ export default function ChatChannel({
                               textInputRef.current?.focus();
                             }}
                             title="Reply to this message"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
+                            className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 shadow-md transition cursor-pointer"
                           >
                             <Reply className="w-3.5 h-3.5" />
                           </button>
@@ -916,7 +918,7 @@ export default function ChatChannel({
                                 setActiveActionMessageId(null);
                               }}
                               title={msg.is_pinned ? "Unpin message" : "Pin message to top"}
-                              className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
+                              className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 shadow-md transition cursor-pointer"
                             >
                               {msg.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
                             </button>
@@ -929,8 +931,8 @@ export default function ChatChannel({
                               setDeletingMessage(msg);
                               setActiveActionMessageId(null);
                             }}
-                            title="Delete message (for everyone or for me)"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
+                            title="Delete message"
+                            className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-rose-400 shadow-md transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -945,7 +947,7 @@ export default function ChatChannel({
                               setActiveActionMessageId(null);
                             }}
                             title="React with Emoji"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
+                            className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-400 shadow-md transition cursor-pointer"
                           >
                             <Smile className="w-3.5 h-3.5" />
                           </button>

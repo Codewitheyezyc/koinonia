@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Download, Volume2, Loader2 } from "lucide-react";
+import { Play, Pause, Download, Loader2 } from "lucide-react";
 
 interface VoiceNotePlayerProps {
   audioUrl: string;
@@ -88,74 +88,77 @@ export default function VoiceNotePlayer({
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // Visual decorative waveform bars
-  const waveHeights = [40, 65, 85, 50, 90, 70, 45, 80, 100, 60, 75, 45, 90, 65, 80, 50, 70, 85];
+  // Ultra-clean 14-bar sound wave heights
+  const waveHeights = [30, 60, 90, 45, 80, 100, 70, 50, 85, 95, 60, 40, 75, 55];
 
   return (
     <div
-      className={`p-3 rounded-2xl border flex flex-col gap-2 min-w-[240px] max-w-sm shadow-md transition ${
-        isMe
-          ? "bg-amber-950/40 border-amber-500/40 text-amber-100"
-          : "bg-slate-900/90 border-slate-800 text-slate-200"
+      className={`p-2 rounded-2xl flex items-center gap-2 max-w-[230px] sm:max-w-[260px] select-none transition ${
+        isMe ? "text-amber-100" : "text-slate-200"
       }`}
     >
-      <div className="flex items-center gap-3">
-        {/* Play/Pause Button */}
-        <button
-          type="button"
-          onClick={togglePlay}
-          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition shadow-lg shrink-0 cursor-pointer ${
-            isMe
-              ? "bg-amber-500 text-slate-950 hover:bg-amber-400"
-              : "bg-amber-600/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500 hover:text-slate-950"
-          }`}
-        >
-          {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-        </button>
+      {/* Small circular play button */}
+      <button
+        type="button"
+        onClick={togglePlay}
+        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition shrink-0 cursor-pointer shadow-md ${
+          isMe
+            ? "bg-amber-500 text-slate-950 hover:bg-amber-400"
+            : "bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500 hover:text-slate-950"
+        }`}
+      >
+        {isPlaying ? (
+          <Pause className="w-3.5 h-3.5 fill-current" />
+        ) : (
+          <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+        )}
+      </button>
 
-        {/* Animated Waveform Visualizer */}
-        <div className="flex-1 flex items-center gap-1 h-8 cursor-pointer" onClick={togglePlay}>
-          {waveHeights.map((h, i) => {
-            const barProgress = (i / waveHeights.length) * 100;
-            const isPassed = progressPercent >= barProgress;
-            return (
-              <div
-                key={i}
-                style={{ height: `${h}%` }}
-                className={`flex-1 rounded-full transition-all duration-150 ${
-                  isPassed
-                    ? "bg-amber-400"
-                    : isMe
-                    ? "bg-amber-800/60"
-                    : "bg-slate-700/80"
-                } ${isPlaying && isPassed ? "animate-pulse" : ""}`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Download Audio */}
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={downloading}
-          title="Download voice prayer to computer"
-          className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition cursor-pointer shrink-0"
-        >
-          {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-        </button>
+      {/* Sleek Waveform track */}
+      <div
+        className="flex-1 flex items-center gap-0.5 h-6 cursor-pointer min-w-[90px]"
+        onClick={togglePlay}
+      >
+        {waveHeights.map((h, i) => {
+          const barProgress = (i / waveHeights.length) * 100;
+          const isPassed = progressPercent >= barProgress;
+          return (
+            <div
+              key={i}
+              style={{ height: `${h}%` }}
+              className={`w-1 rounded-full transition-all duration-100 ${
+                isPassed
+                  ? isMe
+                    ? "bg-amber-300"
+                    : "bg-amber-400"
+                  : isMe
+                  ? "bg-amber-800/40"
+                  : "bg-slate-700/60"
+              }`}
+            />
+          );
+        })}
       </div>
 
-      {/* Duration & Time text */}
-      <div className="flex items-center justify-between text-[10px] font-mono opacity-80 px-1">
-        <span className="flex items-center gap-1">
-          <Volume2 className="w-3 h-3 text-amber-400" />
-          <span>Spoken Prayer / Voice Note</span>
-        </span>
-        <span>
-          {formatSecs(currentTime)} / {formatSecs(duration)}
-        </span>
-      </div>
+      {/* Duration text */}
+      <span className="font-mono text-[10px] font-semibold opacity-90 shrink-0">
+        {formatSecs(isPlaying ? currentTime : duration)}
+      </span>
+
+      {/* Download button */}
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={downloading}
+        title="Download audio"
+        className="p-1 text-slate-400 hover:text-amber-400 transition cursor-pointer shrink-0"
+      >
+        {downloading ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Download className="w-3 h-3" />
+        )}
+      </button>
     </div>
   );
 }
