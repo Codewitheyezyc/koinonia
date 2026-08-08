@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import GuestBadge, { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
+import { worshipChimes } from "@/lib/audio/worshipChimes";
 
 const WORSHIP_REACTIONS = [
   { icon: "🔥", label: "Glory!", color: "text-amber-400" },
@@ -145,7 +146,12 @@ export default function StandaloneMeetingPage({
     }
   };
 
-  const triggerReaction = (emojiText: string) => {
+  const triggerWorshipReaction = (emojiText: string) => {
+    // Play harmonic worship audio chime
+    worshipChimes.playChime(
+      emojiText.includes("🔥") ? "glory" : emojiText.includes("🙌") ? "amen" : emojiText.includes("👑") ? "rejoice" : "spirit"
+    );
+
     const id = Date.now();
     const xPos = Math.floor(Math.random() * 60) + 20; // 20% to 80% horizontal offset
     setFloatingReactions((prev) => [...prev, { id, emoji: emojiText, xPos }]);
@@ -364,7 +370,7 @@ export default function StandaloneMeetingPage({
             {WORSHIP_REACTIONS.map(({ icon, label, color }) => (
               <button
                 key={label}
-                onClick={() => triggerReaction(`${icon} ${label}`)}
+                onClick={() => triggerWorshipReaction(`${icon} ${label}`)}
                 title={label}
                 className={`px-1.5 sm:px-2 py-1 rounded hover:bg-slate-800 text-[11px] sm:text-xs font-semibold ${color} transition cursor-pointer flex items-center gap-1`}
               >

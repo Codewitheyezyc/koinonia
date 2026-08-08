@@ -4,11 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Send, Image as ImageIcon, Loader2, Sparkles, X,
-  Smile, Plus, Maximize2, Reply, AtSign, Check, CheckCheck
+  Smile, Plus, Maximize2, Reply, AtSign, Check, CheckCheck,
+  Mic, Search, Pin, PinOff
 } from "lucide-react";
 import { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
 import ImageLightboxModal from "@/components/ImageLightboxModal";
+import VoiceNoteRecorder from "@/components/VoiceNoteRecorder";
+import VoiceNotePlayer from "@/components/VoiceNotePlayer";
+import PinnedMessageBanner from "@/components/PinnedMessageBanner";
+import DailyConfessionWidget from "@/components/DailyConfessionWidget";
+import ChatSearchModal from "@/components/ChatSearchModal";
+import { worshipChimes } from "@/lib/audio/worshipChimes";
 
 interface Reaction {
   id: string;
@@ -32,6 +39,9 @@ interface Message {
   user_id: string;
   content: string;
   attachment_url?: string;
+  audio_url?: string;
+  audio_duration_seconds?: number;
+  is_pinned?: boolean;
   created_at: string;
   reply_to_id?: string;
   reply_snippet?: ReplySnippet;
@@ -53,7 +63,6 @@ const COMMON_EMOJIS = [
   "👏", "💯", "🌟", "🛡️"
 ];
 
-// Helper to format WhatsApp-style day divider
 function getDayDividerLabel(isoDateString: string): string {
   const date = new Date(isoDateString);
   const now = new Date();
@@ -74,7 +83,6 @@ function getDayDividerLabel(isoDateString: string): string {
 
   if (isYesterday) return "Yesterday";
 
-  // Check if in current year
   const isCurrentYear = date.getFullYear() === now.getFullYear();
   return date.toLocaleDateString(undefined, {
     weekday: "long",
@@ -92,9 +100,11 @@ function getDayKey(isoDateString: string): string {
 export default function ChatChannel({
   channelId,
   channelName,
+  onOpenBible,
 }: {
   channelId: string;
   channelName: string;
+  onOpenBible?: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
@@ -103,8 +113,13 @@ export default function ChatChannel({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isHost, setIsHost] = useState(false);
+
+  // Modals & Controls
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
 
   // WhatsApp Quoted Reply state
   const [replyingTo, setReplyingTo] = useState<{ id: string; senderName: string; content: string } | null>(null);
@@ -122,10 +137,22 @@ export default function ChatChannel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+  const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const supabase = createClient();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const jumpToMessage = (messageId: string) => {
+    const el = messageRefs.current.get(messageId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-amber-500", "scale-[1.01]");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-amber-500", "scale-[1.01]");
+      }, 2000);
+    }
   };
 
   useEffect(() => {
@@ -134,20 +161,27 @@ export default function ChatChannel({
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
-      // Load fellowship members for @tagging autocomplete
+      // Load fellowship members and host status
       const { data: fellowshipData } = await supabase
         .from("channels")
-        .select("fellowship_id")
+        .select("fellowship_id, fellowships:fellowship_id(created_by)")
         .eq("id", channelId)
         .single();
 
       if (fellowshipData?.fellowship_id) {
+        if ((fellowshipData as any).fellowships?.created_by === user?.id) {
+          setIsHost(true);
+        }
+
         const { data: memberData } = await supabase
           .from("fellowship_members")
-          .select("user_id, profiles:user_id(id, full_name)")
+          .select("user_id, role, profiles:user_id(id, full_name)")
           .eq("fellowship_id", fellowshipData.fellowship_id);
 
         if (memberData) {
+          const userMember = memberData.find((m: any) => m.user_id === user?.id);
+          if (userMember?.role === "host") setIsHost(true);
+
           const formattedMembers = memberData
             .map((m: any) => m.profiles)
             .filter(Boolean) as MemberProfile[];
@@ -155,7 +189,7 @@ export default function ChatChannel({
         }
       }
 
-      // 1. Fetch initial messages with profiles
+      // Fetch initial messages with profiles
       const { data: msgs, error: msgError } = await supabase
         .from("messages")
         .select("*, profiles:user_id(full_name, avatar_url)")
@@ -163,7 +197,6 @@ export default function ChatChannel({
         .order("created_at", { ascending: true });
 
       if (!msgError && msgs) {
-        // 2. Fetch reactions for these messages
         const messageIds = msgs.map((m) => m.id);
         let allReactions: Reaction[] = [];
 
@@ -214,6 +247,9 @@ export default function ChatChannel({
             user_id: payload.new.user_id,
             content: payload.new.content,
             attachment_url: payload.new.attachment_url,
+            audio_url: payload.new.audio_url,
+            audio_duration_seconds: payload.new.audio_duration_seconds,
+            is_pinned: payload.new.is_pinned,
             created_at: payload.new.created_at,
             reply_to_id: payload.new.reply_to_id,
             reply_snippet: payload.new.reply_snippet,
@@ -225,9 +261,23 @@ export default function ChatChannel({
           setTimeout(scrollToBottom, 100);
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === payload.new.id ? { ...m, ...payload.new } : m))
+          );
+        }
+      )
       .subscribe();
 
-    // Subscribe to Realtime message reactions
+    // Subscribe to Realtime reactions
     const rxChannelName = `realtime-rx:${channelId}-${Math.random().toString(36).substring(2, 7)}`;
     const rxSubscription = supabase
       .channel(rxChannelName)
@@ -288,7 +338,6 @@ export default function ChatChannel({
     const val = e.target.value;
     setInputText(val);
 
-    // Detect @ mention trigger
     const cursor = e.target.selectionStart || 0;
     const textBeforeCursor = val.slice(0, cursor);
     const lastAtMatch = textBeforeCursor.match(/@([a-zA-Z0-9_ -]*)$/);
@@ -302,7 +351,6 @@ export default function ChatChannel({
   };
 
   const handleSelectMention = (memberName: string) => {
-    // Replace @query with @MemberName and add space
     const cleanName = memberName.replace(/\s+/g, "");
     const updated = inputText.replace(/@[a-zA-Z0-9_ -]*$/, `@${cleanName} `);
     setInputText(updated);
@@ -374,9 +422,44 @@ export default function ChatChannel({
     }
   };
 
+  // Send Voice Note audio memo
+  const handleSendVoiceNote = async (audioBlob: Blob, durationSeconds: number) => {
+    if (!currentUser) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", audioBlob, `voice-note-${Date.now()}.webm`);
+
+      const uploadRes = await fetch("/api/cloudinary/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Failed to upload voice note");
+
+      await supabase.from("messages").insert({
+        channel_id: channelId,
+        user_id: currentUser.id,
+        content: "🎙️ Spoken Prayer / Voice Note",
+        audio_url: uploadData.url,
+        audio_duration_seconds: durationSeconds,
+      });
+
+      setShowVoiceRecorder(false);
+    } catch (err: any) {
+      console.error("Failed to upload audio note:", err);
+      alert(err.message || "Failed to upload audio prayer");
+    }
+  };
+
   const handleToggleReaction = async (messageId: string, emoji: string) => {
     if (!currentUser) return;
     setActiveReactionMessageId(null);
+
+    // Play angelic harmonic audio chime for worship emojis
+    worshipChimes.playChime(
+      emoji.includes("🔥") ? "glory" : emoji.includes("🙌") ? "amen" : emoji.includes("👑") ? "rejoice" : "spirit"
+    );
 
     const targetMsg = messages.find((m) => m.id === messageId);
     const existingReaction = targetMsg?.reactions?.find(
@@ -448,6 +531,21 @@ export default function ChatChannel({
     }
   };
 
+  const handleTogglePin = async (messageId: string, currentPinStatus: boolean = false) => {
+    try {
+      await supabase
+        .from("messages")
+        .update({ is_pinned: !currentPinStatus })
+        .eq("id", messageId);
+
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, is_pinned: !currentPinStatus } : m))
+      );
+    } catch (err) {
+      console.error("Failed to pin message:", err);
+    }
+  };
+
   const insertEmojiIntoInput = (emoji: string) => {
     setInputText((prev) => prev + emoji);
   };
@@ -469,6 +567,8 @@ export default function ChatChannel({
     return Array.from(map.entries()).map(([emoji, data]) => ({ emoji, ...data }));
   };
 
+  const pinnedMessage = messages.find((m) => m.is_pinned);
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-900/40 text-slate-400">
@@ -477,15 +577,31 @@ export default function ChatChannel({
     );
   }
 
-  // Filter members for @mention dropdown
   const filteredMembers = members.filter((m) =>
     m.full_name.toLowerCase().includes(mentionQuery)
   );
 
   return (
     <div className="flex-1 flex flex-col justify-between h-full bg-slate-900/30 overflow-hidden pb-16 md:pb-0 relative">
+      {/* Daily Scripture & Confession Card Widget */}
+      <DailyConfessionWidget onOpenBible={onOpenBible} />
+
+      {/* Pinned Message / Weekly Scripture Focus Banner */}
+      {pinnedMessage && (
+        <PinnedMessageBanner
+          pinnedMessage={{
+            id: pinnedMessage.id,
+            content: pinnedMessage.content,
+            senderName: pinnedMessage.profiles?.full_name,
+          }}
+          isHost={isHost}
+          onUnpin={(id) => handleTogglePin(id, true)}
+          onJumpToMessage={jumpToMessage}
+        />
+      )}
+
       {/* Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-4 sm:pt-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 pt-3 space-y-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-2 text-slate-500">
             <Sparkles className="w-8 h-8 text-amber-500/40" />
@@ -493,7 +609,7 @@ export default function ChatChannel({
               Welcome to #{channelName.replace("-", " ")}
             </p>
             <p className="text-xs max-w-sm">
-              Share words of encouragement, scripture reflections, and prayer notes. Type <strong>@</strong> to mention brethren, or tap <strong>Reply</strong> on any message.
+              Share words of encouragement, voice notes, and scripture reflections. Type <strong>@</strong> to mention brethren, or tap <strong>Reply</strong> on any message.
             </p>
           </div>
         ) : (
@@ -518,7 +634,13 @@ export default function ChatChannel({
                 )}
 
                 <div
-                  className={`flex items-start gap-2.5 group relative ${isMe ? "flex-row-reverse" : ""}`}
+                  ref={(el) => {
+                    if (el) messageRefs.current.set(msg.id, el);
+                    else messageRefs.current.delete(msg.id);
+                  }}
+                  className={`flex items-start gap-2.5 group relative transition-all duration-300 rounded-2xl p-0.5 ${
+                    isMe ? "flex-row-reverse" : ""
+                  }`}
                 >
                   {/* User Avatar */}
                   <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 shadow-sm">
@@ -526,12 +648,17 @@ export default function ChatChannel({
                   </div>
 
                   <div className={`max-w-xl space-y-1 ${isMe ? "items-end text-right" : ""}`}>
-                    {/* Author Header with Stylized Guest Badge */}
+                    {/* Author Header with Stylized Guest Badge & Pin Indicator */}
                     <div className={`flex items-center gap-2 text-xs ${isMe ? "justify-end" : ""}`}>
                       <FormattedAuthorName
                         name={msg.profiles?.full_name}
                         className={`font-semibold ${isMe ? "text-amber-300" : "text-slate-300"}`}
                       />
+                      {msg.is_pinned && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[10px] font-semibold">
+                          <Pin className="w-2.5 h-2.5" /> Pinned
+                        </span>
+                      )}
                       <span className="text-[10px] text-slate-500 font-mono">{formatTime(msg.created_at)}</span>
                     </div>
 
@@ -556,11 +683,20 @@ export default function ChatChannel({
                           </div>
                         )}
 
-                        {/* Rich Formatted Content with @mentions, bold, quotes, links */}
-                        <FormattedMessageContent
-                          content={msg.content}
-                          className={isMe ? "text-amber-100" : "text-slate-200"}
-                        />
+                        {/* Voice Note Player (if audio message) */}
+                        {msg.audio_url ? (
+                          <VoiceNotePlayer
+                            audioUrl={msg.audio_url}
+                            durationSeconds={msg.audio_duration_seconds}
+                            isMe={isMe}
+                          />
+                        ) : (
+                          /* Rich Formatted Content with @mentions, bold, quotes, links */
+                          <FormattedMessageContent
+                            content={msg.content}
+                            className={isMe ? "text-amber-100" : "text-slate-200"}
+                          />
+                        )}
 
                         {/* Image Attachment with Lightbox Trigger & Download */}
                         {msg.attachment_url && (
@@ -594,7 +730,7 @@ export default function ChatChannel({
                         </div>
                       </div>
 
-                      {/* Quick Action Popover Button on Hover (Reply & React) */}
+                      {/* Quick Action Popover Button on Hover (Reply, Pin, React) */}
                       <div
                         className={`absolute -top-3 ${
                           isMe ? "left-0 -translate-x-full pl-2" : "right-0 translate-x-full pr-2"
@@ -616,6 +752,18 @@ export default function ChatChannel({
                         >
                           <Reply className="w-3.5 h-3.5" />
                         </button>
+
+                        {/* Host Pin Toggle Button */}
+                        {isHost && (
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePin(msg.id, !!msg.is_pinned)}
+                            title={msg.is_pinned ? "Unpin message" : "Pin message to top"}
+                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                          >
+                            {msg.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
 
                         {/* Emoji React Button */}
                         <button
@@ -758,7 +906,7 @@ export default function ChatChannel({
         </div>
       )}
 
-      {/* Emoji Picker Drawer for Input Bar */}
+      {/* Emoji Picker Drawer */}
       {showEmojiPicker && (
         <div
           ref={emojiPickerRef}
@@ -792,57 +940,92 @@ export default function ChatChannel({
         </div>
       )}
 
-      {/* Message Input Box */}
-      <div className="p-4 bg-slate-950 border-t border-slate-800/80">
-        <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            accept="image/*"
-            className="hidden"
+      {/* Voice Note Active Recorder View */}
+      {showVoiceRecorder ? (
+        <div className="p-3 sm:p-4 bg-slate-950 border-t border-slate-800">
+          <VoiceNoteRecorder
+            onSendAudio={handleSendVoiceNote}
+            onCancel={() => setShowVoiceRecorder(false)}
           />
+        </div>
+      ) : (
+        /* Standard Message Input Box */
+        <div className="p-4 bg-slate-950 border-t border-slate-800/80">
+          <form onSubmit={handleSendMessage} className="flex items-center gap-2 max-w-4xl mx-auto">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              className="hidden"
+            />
 
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title="Attach image"
-            className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 transition cursor-pointer shrink-0"
-          >
-            <ImageIcon className="w-4 h-4" />
-          </button>
+            {/* Attach Image */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              title="Attach image"
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 transition cursor-pointer shrink-0"
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setShowEmojiPicker((prev) => !prev)}
-            title="Insert Emoji"
-            className={`p-3 rounded-xl bg-slate-900 border transition cursor-pointer shrink-0 ${
-              showEmojiPicker
-                ? "border-amber-500 text-amber-400 bg-amber-500/10"
-                : "border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40"
-            }`}
-          >
-            <Smile className="w-4 h-4" />
-          </button>
+            {/* Record Spoken Prayer / Voice Note */}
+            <button
+              type="button"
+              onClick={() => setShowVoiceRecorder(true)}
+              title="Record Voice Note / Spoken Prayer"
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer shrink-0"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
 
-          <input
-            ref={textInputRef}
-            type="text"
-            value={inputText}
-            onChange={handleInputChange}
-            placeholder={`Message #${channelName.replace("-", " ")}... (type @ to mention, tap Reply to quote)`}
-            className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition"
-          />
+            {/* In-Chat Search */}
+            <button
+              type="button"
+              onClick={() => setShowSearchModal(true)}
+              title="Search chat messages & scriptures"
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 transition cursor-pointer shrink-0 hidden sm:inline-flex"
+            >
+              <Search className="w-4 h-4" />
+            </button>
 
-          <button
-            type="submit"
-            disabled={(!inputText.trim() && !selectedFile) || sending}
-            className="p-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 transition disabled:opacity-40 cursor-pointer shrink-0 font-bold"
-          >
-            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </button>
-        </form>
-      </div>
+            {/* Kingdom Emojis */}
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
+              title="Insert Kingdom Emoji"
+              className={`p-2.5 rounded-xl bg-slate-900 border transition cursor-pointer shrink-0 ${
+                showEmojiPicker
+                  ? "border-amber-500 text-amber-400 bg-amber-500/10"
+                  : "border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40"
+              }`}
+            >
+              <Smile className="w-4 h-4" />
+            </button>
+
+            {/* Text Input */}
+            <input
+              ref={textInputRef}
+              type="text"
+              value={inputText}
+              onChange={handleInputChange}
+              placeholder={`Message #${channelName.replace("-", " ")}... (type @ to mention, > for verses)`}
+              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition"
+            />
+
+            {/* Send Button */}
+            <button
+              type="submit"
+              disabled={(!inputText.trim() && !selectedFile) || sending}
+              className="p-2.5 sm:px-4 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 transition disabled:opacity-40 cursor-pointer shrink-0 font-bold flex items-center gap-1.5"
+            >
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              <span className="hidden sm:inline">Send</span>
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Image Lightbox Viewer Modal with Direct Download to Computer */}
       {lightboxImageUrl && (
@@ -852,6 +1035,14 @@ export default function ChatChannel({
           onClose={() => setLightboxImageUrl(null)}
         />
       )}
+
+      {/* In-Chat Message Search Modal */}
+      <ChatSearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        messages={messages}
+        onSelectMessage={jumpToMessage}
+      />
     </div>
   );
 }

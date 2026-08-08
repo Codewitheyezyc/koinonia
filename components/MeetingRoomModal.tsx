@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import GuestBadge, { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
+import { worshipChimes } from "@/lib/audio/worshipChimes";
 
 const WORSHIP_REACTIONS = [
   { icon: "🔥", label: "Glory!", color: "text-amber-400" },
@@ -113,6 +114,11 @@ export default function MeetingRoomModal({
   if (!isOpen) return null;
 
   const triggerWorshipReaction = (emojiText: string) => {
+    // Play harmonic worship audio chime
+    worshipChimes.playChime(
+      emojiText.includes("🔥") ? "glory" : emojiText.includes("🙌") ? "amen" : emojiText.includes("👑") ? "rejoice" : "spirit"
+    );
+
     const id = Date.now();
     const xPos = Math.floor(Math.random() * 60) + 20;
     setFloatingReactions((prev) => [...prev, { id, emoji: emojiText, xPos }]);
