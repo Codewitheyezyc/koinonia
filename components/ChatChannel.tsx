@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Send, Image as ImageIcon, Loader2, Sparkles, X,
   Smile, Plus, Maximize2, Reply, AtSign, Check, CheckCheck,
-  Mic, Search, Pin, PinOff, Trash2
+  Mic, Search, Pin, PinOff, Trash2, MoreHorizontal
 } from "lucide-react";
 import { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
@@ -52,6 +52,7 @@ interface Message {
     avatar_url?: string;
   };
   reactions?: Reaction[];
+  isOptimistic?: boolean;
 }
 
 interface MemberProfile {
@@ -117,7 +118,8 @@ export default function ChatChannel({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isHost, setIsHost] = useState(false);
 
-  // Modals & Controls
+  // Active message actions selection (for mobile tap support)
+  const [activeActionMessageId, setActiveActionMessageId] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
@@ -225,7 +227,7 @@ export default function ChatChannel({
 
     initChat();
 
-    // Subscribe to Realtime messages
+    // Subscribe to Realtime messages with robust multi-event listening
     const msgChannelName = `realtime-msgs:${channelId}-${Math.random().toString(36).substring(2, 7)}`;
     const msgSubscription = supabase
       .channel(msgChannelName)
@@ -244,7 +246,7 @@ export default function ChatChannel({
             .eq("id", payload.new.user_id)
             .single();
 
-          const newMessage: Message = {
+          const incomingMsg: Message = {
             id: payload.new.id,
             channel_id: payload.new.channel_id,
             user_id: payload.new.user_id,
@@ -261,7 +263,18 @@ export default function ChatChannel({
             reactions: [],
           };
 
-          setMessages((prev) => [...prev, newMessage]);
+          setMessages((prev) => {
+            // If already present (e.g. from optimistic update), replace/reconcile it
+            const existingIndex = prev.findIndex(
+              (m) => m.id === incomingMsg.id || (m.isOptimistic && m.content === incomingMsg.content && m.user_id === incomingMsg.user_id)
+            );
+            if (existingIndex !== -1) {
+              const copy = [...prev];
+              copy[existingIndex] = incomingMsg;
+              return copy;
+            }
+            return [...prev, incomingMsg];
+          });
           setTimeout(scrollToBottom, 100);
         }
       )
@@ -387,9 +400,37 @@ export default function ChatChannel({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Instant 0ms Optimistic Sending
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!inputText.trim() && !selectedFile) || sending || !currentUser) return;
+
+    const contentToSend = inputText.trim() || "Shared an attachment";
+    const snippetToAttach = replyingTo ? { ...replyingTo } : undefined;
+    const replyToId = replyingTo?.id;
+    const optimisticId = `optimistic-${Date.now()}`;
+
+    // 1. INSTANT OPTIMISTIC RENDER (0ms perceived latency!)
+    const optimisticMsg: Message = {
+      id: optimisticId,
+      channel_id: channelId,
+      user_id: currentUser.id,
+      content: contentToSend,
+      attachment_url: previewUrl || undefined,
+      created_at: new Date().toISOString(),
+      reply_to_id: replyToId,
+      reply_snippet: snippetToAttach,
+      profiles: { full_name: currentUser.email?.split("@")[0] || "You" },
+      reactions: [],
+      isOptimistic: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setInputText("");
+    setReplyingTo(null);
+    setShowEmojiPicker(false);
+    setShowMentionSuggestions(false);
+    setTimeout(scrollToBottom, 50);
 
     setSending(true);
     let uploadedAttachmentUrl: string | undefined = undefined;
@@ -406,40 +447,66 @@ export default function ChatChannel({
 
         const uploadData = await uploadRes.json();
         if (!uploadRes.ok) throw new Error(uploadData.error || "Failed to upload image");
-
         uploadedAttachmentUrl = uploadData.url;
       }
-
-      const contentToSend = inputText.trim() || "Shared an attachment";
-      const snippetToAttach = replyingTo ? { ...replyingTo } : undefined;
-      const replyToId = replyingTo?.id;
-
-      setInputText("");
-      setReplyingTo(null);
       removeSelectedFile();
-      setShowEmojiPicker(false);
-      setShowMentionSuggestions(false);
 
-      const { error } = await supabase.from("messages").insert({
-        channel_id: channelId,
-        user_id: currentUser.id,
-        content: contentToSend,
-        attachment_url: uploadedAttachmentUrl,
-        reply_to_id: replyToId,
-        reply_snippet: snippetToAttach,
-      });
+      // 2. Persist to database
+      const { data: savedMsg, error } = await supabase
+        .from("messages")
+        .insert({
+          channel_id: channelId,
+          user_id: currentUser.id,
+          content: contentToSend,
+          attachment_url: uploadedAttachmentUrl,
+          reply_to_id: replyToId,
+          reply_snippet: snippetToAttach,
+        })
+        .select("*, profiles:user_id(full_name, avatar_url)")
+        .single();
 
       if (error) throw error;
+
+      // 3. Smoothly replace optimistic ID with real saved message
+      if (savedMsg) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === optimisticId ? { ...savedMsg, reactions: [] } : m))
+        );
+      }
     } catch (err: any) {
       console.error("Failed to send message:", err);
+      // Remove optimistic message if upload totally failed
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      alert(err.message || "Failed to deliver message. Please retry.");
     } finally {
       setSending(false);
     }
   };
 
-  // Send Voice Note audio memo
+  // Send Voice Note audio memo with instant local rendering
   const handleSendVoiceNote = async (audioBlob: Blob, durationSeconds: number) => {
     if (!currentUser) return;
+    const localAudioUrl = URL.createObjectURL(audioBlob);
+    const optimisticId = `optimistic-audio-${Date.now()}`;
+
+    // Instant optimistic voice note render
+    const optimisticAudioMsg: Message = {
+      id: optimisticId,
+      channel_id: channelId,
+      user_id: currentUser.id,
+      content: "🎙️ Spoken Prayer / Voice Note",
+      audio_url: localAudioUrl,
+      audio_duration_seconds: durationSeconds,
+      created_at: new Date().toISOString(),
+      profiles: { full_name: currentUser.email?.split("@")[0] || "You" },
+      reactions: [],
+      isOptimistic: true,
+    };
+
+    setMessages((prev) => [...prev, optimisticAudioMsg]);
+    setShowVoiceRecorder(false);
+    setTimeout(scrollToBottom, 50);
+
     try {
       const formData = new FormData();
       formData.append("file", audioBlob, `voice-note-${Date.now()}.webm`);
@@ -452,17 +519,28 @@ export default function ChatChannel({
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) throw new Error(uploadData.error || "Failed to upload voice note");
 
-      await supabase.from("messages").insert({
-        channel_id: channelId,
-        user_id: currentUser.id,
-        content: "🎙️ Spoken Prayer / Voice Note",
-        audio_url: uploadData.url,
-        audio_duration_seconds: durationSeconds,
-      });
+      const { data: savedMsg, error } = await supabase
+        .from("messages")
+        .insert({
+          channel_id: channelId,
+          user_id: currentUser.id,
+          content: "🎙️ Spoken Prayer / Voice Note",
+          audio_url: uploadData.url,
+          audio_duration_seconds: durationSeconds,
+        })
+        .select("*, profiles:user_id(full_name, avatar_url)")
+        .single();
 
-      setShowVoiceRecorder(false);
+      if (error) throw error;
+
+      if (savedMsg) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === optimisticId ? { ...savedMsg, reactions: [] } : m))
+        );
+      }
     } catch (err: any) {
       console.error("Failed to upload audio note:", err);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       alert(err.message || "Failed to upload audio prayer");
     }
   };
@@ -659,14 +737,14 @@ export default function ChatChannel({
               Welcome to #{channelName.replace("-", " ")}
             </p>
             <p className="text-xs max-w-sm">
-              Share words of encouragement, voice notes, and scripture reflections. Type <strong>@</strong> to mention brethren, or tap <strong>Reply</strong> on any message.
+              Share words of encouragement, voice notes, and scripture reflections. Tap any message to <strong>Reply</strong>, <strong>React</strong>, or <strong>Delete</strong>.
             </p>
           </div>
         ) : (
           messages.map((msg, index) => {
             const isMe = msg.user_id === currentUser?.id;
-            const canDeleteForEveryone = isMe || isHost;
             const groupedRx = groupReactions(msg.reactions);
+            const isSelected = activeActionMessageId === msg.id;
 
             // WhatsApp Day Divider Calculation
             const currentDayKey = getDayKey(msg.created_at);
@@ -674,7 +752,7 @@ export default function ChatChannel({
             const isNewDay = currentDayKey !== prevDayKey;
 
             return (
-              <div key={msg.id} className="space-y-4">
+              <div key={msg.id} className="space-y-3">
                 {/* Centered WhatsApp-Style Day Divider Pill */}
                 {isNewDay && (
                   <div className="flex items-center justify-center my-4 sticky top-1 z-10">
@@ -689,7 +767,7 @@ export default function ChatChannel({
                     if (el) messageRefs.current.set(msg.id, el);
                     else messageRefs.current.delete(msg.id);
                   }}
-                  className={`flex items-start gap-2.5 group relative transition-all duration-300 rounded-2xl p-0.5 ${
+                  className={`flex items-start gap-2.5 group relative transition-all duration-200 rounded-2xl p-1 ${
                     isMe ? "flex-row-reverse" : ""
                   }`}
                 >
@@ -713,16 +791,21 @@ export default function ChatChannel({
                       <span className="text-[10px] text-slate-500 font-mono">{formatTime(msg.created_at)}</span>
                     </div>
 
-                    {/* Message Bubble Container */}
-                    <div className="relative inline-block text-left max-w-full">
+                    {/* Message Bubble Container — Tap/Click to toggle action bar */}
+                    <div
+                      onClick={() =>
+                        setActiveActionMessageId(activeActionMessageId === msg.id ? null : msg.id)
+                      }
+                      className="relative inline-block text-left max-w-full cursor-pointer select-none"
+                    >
                       <div
-                        className={`p-3 rounded-2xl text-sm leading-relaxed space-y-2 shadow-md ${
+                        className={`p-3 rounded-2xl text-sm leading-relaxed space-y-2 shadow-md transition ${
                           msg.is_deleted
                             ? "bg-slate-900/60 border border-slate-800 text-slate-500 italic"
                             : isMe
                             ? "bg-gradient-to-br from-amber-600/25 to-amber-700/20 border border-amber-500/40 text-amber-100 rounded-tr-none"
                             : "bg-slate-800/90 border border-slate-700/80 text-slate-200 rounded-tl-none"
-                        }`}
+                        } ${isSelected ? "ring-2 ring-amber-500/60" : ""}`}
                       >
                         {/* WhatsApp-Style Quoted Snippet if Replying */}
                         {!msg.is_deleted && msg.reply_snippet && (
@@ -761,7 +844,8 @@ export default function ChatChannel({
                         {!msg.is_deleted && msg.attachment_url && (
                           <div className="pt-1.5 relative group/img">
                             <div
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setLightboxImageUrl(msg.attachment_url!);
                                 setLightboxImageAlt(msg.content || "Attached image");
                               }}
@@ -785,16 +869,25 @@ export default function ChatChannel({
                         {/* Timestamp & Delivery status bottom right */}
                         <div className="flex items-center justify-end gap-1 pt-0.5 text-[9px] text-slate-400 font-mono opacity-80">
                           <span>{formatTime(msg.created_at)}</span>
-                          {isMe && <CheckCheck className="w-3 h-3 text-amber-400 inline" />}
+                          {isMe && (
+                            msg.isOptimistic ? (
+                              <Check className="w-3 h-3 text-slate-500 inline" />
+                            ) : (
+                              <CheckCheck className="w-3 h-3 text-amber-400 inline" />
+                            )
+                          )}
                         </div>
                       </div>
 
-                      {/* Quick Action Popover Button on Hover (Reply, Pin, Trash, React) */}
+                      {/* Action Bar (Visible on Hover OR on Touch Tap) */}
                       {!msg.is_deleted && (
                         <div
-                          className={`absolute -top-3 ${
-                            isMe ? "left-0 -translate-x-full pl-2" : "right-0 translate-x-full pr-2"
-                          } opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 z-10`}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`absolute -top-3.5 ${
+                            isMe ? "left-0 -translate-x-full pl-1.5" : "right-0 translate-x-full pr-1.5"
+                          } ${
+                            isSelected ? "opacity-100 z-20 flex" : "opacity-0 group-hover:opacity-100 hidden sm:flex"
+                          } items-center gap-1 transition-opacity duration-150`}
                         >
                           {/* WhatsApp-style Reply Button */}
                           <button
@@ -805,10 +898,11 @@ export default function ChatChannel({
                                 senderName: msg.profiles?.full_name || "Believer",
                                 content: msg.content,
                               });
+                              setActiveActionMessageId(null);
                               textInputRef.current?.focus();
                             }}
                             title="Reply to this message"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
                           >
                             <Reply className="w-3.5 h-3.5" />
                           </button>
@@ -817,20 +911,26 @@ export default function ChatChannel({
                           {isHost && (
                             <button
                               type="button"
-                              onClick={() => handleTogglePin(msg.id, !!msg.is_pinned)}
+                              onClick={() => {
+                                handleTogglePin(msg.id, !!msg.is_pinned);
+                                setActiveActionMessageId(null);
+                              }}
                               title={msg.is_pinned ? "Unpin message" : "Pin message to top"}
-                              className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                              className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
                             >
                               {msg.is_pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
                             </button>
                           )}
 
-                          {/* WhatsApp Delete Button */}
+                          {/* WhatsApp Delete Button (Author or Host) */}
                           <button
                             type="button"
-                            onClick={() => setDeletingMessage(msg)}
+                            onClick={() => {
+                              setDeletingMessage(msg);
+                              setActiveActionMessageId(null);
+                            }}
                             title="Delete message (for everyone or for me)"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -838,13 +938,14 @@ export default function ChatChannel({
                           {/* Emoji React Button */}
                           <button
                             type="button"
-                            onClick={() =>
+                            onClick={() => {
                               setActiveReactionMessageId(
                                 activeReactionMessageId === msg.id ? null : msg.id
-                              )
-                            }
+                              );
+                              setActiveActionMessageId(null);
+                            }}
                             title="React with Emoji"
-                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-md transition cursor-pointer"
+                            className="p-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 hover:text-amber-400 hover:border-amber-500/50 hover:bg-slate-700 shadow-lg transition cursor-pointer"
                           >
                             <Smile className="w-3.5 h-3.5" />
                           </button>
@@ -854,6 +955,7 @@ export default function ChatChannel({
                       {/* Quick Reaction Popover Menu */}
                       {activeReactionMessageId === msg.id && (
                         <div
+                          onClick={(e) => e.stopPropagation()}
                           className={`absolute -top-12 ${
                             isMe ? "right-0" : "left-0"
                           } z-30 flex items-center gap-1 p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100`}
@@ -1013,15 +1115,15 @@ export default function ChatChannel({
 
       {/* Voice Note Active Recorder View */}
       {showVoiceRecorder ? (
-        <div className="p-2.5 sm:p-4 bg-slate-950 border-t border-slate-800">
+        <div className="p-2 sm:p-3 bg-slate-950 border-t border-slate-800">
           <VoiceNoteRecorder
             onSendAudio={handleSendVoiceNote}
             onCancel={() => setShowVoiceRecorder(false)}
           />
         </div>
       ) : (
-        /* Standard Message Input Box — 100% responsive, Send button always visible */
-        <div className="p-2.5 sm:p-4 bg-slate-950 border-t border-slate-800/80">
+        /* Standard Message Input Box — 100% responsive flex layout, Send button ALWAYS visible */
+        <div className="p-2 sm:p-3.5 bg-slate-950 border-t border-slate-800/80">
           <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 sm:gap-2 max-w-4xl mx-auto w-full">
             <input
               type="file"
@@ -1085,7 +1187,7 @@ export default function ChatChannel({
               className="flex-1 min-w-0 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition"
             />
 
-            {/* Send Button — always clearly visible with high contrast */}
+            {/* Send Button — ALWAYS visible and prominent */}
             <button
               type="submit"
               disabled={(!inputText.trim() && !selectedFile) || sending}
