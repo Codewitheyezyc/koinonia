@@ -639,9 +639,31 @@ export default function ChatChannel({
     }
   };
 
-  // WhatsApp Message Deletion
+  // WhatsApp Message Deletion — Synchronized across all devices and accounts
   const handleDeleteForEveryone = async (messageId: string) => {
+    // 1. Instant local optimistic update
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === messageId
+          ? {
+              ...m,
+              is_deleted: true,
+              content: "🚫 This message was deleted",
+              attachment_url: undefined,
+              audio_url: undefined,
+            }
+          : m
+      )
+    );
+
     try {
+      // 2. Call API & Supabase for 100% server persistence
+      await fetch("/api/messages/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId, mode: "everyone" }),
+      });
+
       await supabase
         .from("messages")
         .update({
@@ -651,20 +673,6 @@ export default function ChatChannel({
           audio_url: null,
         })
         .eq("id", messageId);
-
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId
-            ? {
-                ...m,
-                is_deleted: true,
-                content: "🚫 This message was deleted",
-                attachment_url: undefined,
-                audio_url: undefined,
-              }
-            : m
-        )
-      );
     } catch (err) {
       console.error("Failed to delete message for everyone:", err);
     }
