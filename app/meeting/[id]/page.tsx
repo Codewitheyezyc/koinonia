@@ -13,7 +13,7 @@ import "@livekit/components-styles";
 import {
   Video, Sparkles, Loader2, PhoneOff, AlertCircle,
   Users, CheckCircle2, ArrowRight, Shield, MessageSquare,
-  Send, Smile, X, Heart, Flame
+  Send, Smile, X, Heart, Flame, Trash2
 } from "lucide-react";
 import GuestBadge, { FormattedAuthorName } from "@/components/GuestBadge";
 import FormattedMessageContent from "@/components/FormattedMessageContent";
@@ -469,16 +469,25 @@ export default function StandaloneMeetingPage({
                 </div>
               ) : (
                 inCallMessages.map((msg) => (
-                  <div key={msg.id} className="space-y-1 p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <FormattedAuthorName name={msg.senderName} className="font-semibold text-slate-200 text-[11px]" />
-                      <span className="text-[9px] text-slate-500">{msg.time}</span>
+                    <div key={msg.id} className="space-y-1 p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 group/msg relative">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <FormattedAuthorName name={msg.senderName} className="font-semibold text-slate-200 text-[11px]" />
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] text-slate-500">{msg.time}</span>
+                          <button
+                            onClick={() => setInCallMessages((prev) => prev.filter((m) => m.id !== msg.id))}
+                            title="Delete message"
+                            className="opacity-0 group-hover/msg:opacity-100 p-0.5 text-slate-500 hover:text-rose-400 transition"
+                          >
+                            <Trash2 className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <FormattedMessageContent
+                        content={msg.content}
+                        className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words"
+                      />
                     </div>
-                    <FormattedMessageContent
-                      content={msg.content}
-                      className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap break-words"
-                    />
-                  </div>
                 ))
               )}
               <div ref={chatScrollRef} />
